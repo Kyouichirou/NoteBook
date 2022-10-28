@@ -12,7 +12,7 @@
 
 > Today, we're excited to announce a $35 million Series B investment led by Sequoia and backed by our existing investors Gradient Ventures and GGV Capital.
 
-[GGV Capital](https://t.qianzhan.com/caijing/detail/170712-0c642625.html](https://new.qq.com/rain/a/20191109A0DBYG00)
+[GGV Capital](https://new.qq.com/rain/a/20191109A0DBYG00)
 
 [Gradient Ventures](https://t.qianzhan.com/caijing/detail/170712-0c642625.html)
 
