@@ -1,0 +1,4 @@
+"column1","column2", "column3", "column4", "column5", "column6"
+"AM", 7, "1", "SD", "SD", "CR"
+"AM", 8, "1,2 ,3", "PR, SD,SD", "PR ; , SD,SD", "PR , ,, SD ,SD"
+"AM", 1, "2", "SD", "SD", "SD"
