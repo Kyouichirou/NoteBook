@@ -1,4 +1,4 @@
-# Windows Terminal美化教程
+# Windows Terminal配置和美化手册
 
 [TOC]
 
@@ -98,15 +98,52 @@ Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ![adjust](https://p0.meituan.net/dpplatform/c8079f7b3fb4aec6e8d0ea4c30b45b2127111.png)
 
+### 2.3 SSH连接
+
+```bash
+# ubuntu terminal
+sudo apt-get install openssh-server
+
+# 确定ssh处于正常服务状态
+ps -e|grep ssh
+964 ?        00:00:00 sshd
+
+# 如果未安装net-tools
+sudo apt install net-tools
+-- 查看ip地址
+ifconfig -a
+inet 192.168.2.102  netmask 255.255.255.0  broadcast 192.168.2.255
+```
+
+![2023-01-07 13 05 02.png](https://img1.imgtp.com/2023/01/07/xJaugW2F.png)
+
+*注意: 这里使用的不是`mosh`登录, 需要取消掉`mosh`*
+
+![2023-01-07 13 11 30.png](https://img1.imgtp.com/2023/01/07/38idkS4y.png)
+
+选择创建好的配置, 打开, 输入`Ubuntu`的对应的账号密码, 即可连接上虚拟机中的`Ubuntu`.
+
+![2023-01-07 13 09 46.png](https://img1.imgtp.com/2023/01/07/H3xyzsmF.png)
+
+![2023-01-07 13 17 22.png](https://img1.imgtp.com/2023/01/07/vcRE0ZPf.png)
+
+运行`python`, 注意默认状态下`Ubuntu`的`python`还是需要输入`python3`(同时也没有安装有pip包管理工具, 需要手动安装).
+
+```bash
+sudo apt install python3-pip
+```
+
+退出远程登录终端的方法:
+
+| 序号  | 方法         |
+| ----- | ------------ |
+| 方法1 | 直接关闭终端 |
+| 方法2 | 输入`logout` |
+| 方法3 | 输入`exit`   |
+| 方法4 | `Ctrl + D`   |
+
 ## 3. Windows Terminal
 
 Microsoft原生 [Windows Terminal](https://www.microsoft.com/store/productId/9N0DX20HK701)
 
 ![terminal](https://p0.meituan.net/dpplatform/28d3277ae4e5fab502c8f28923a7d20213216.png)
-
-
-
-
-
-
-
