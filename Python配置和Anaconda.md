@@ -1,4 +1,4 @@
-# python-关于配置和anaconda
+# Python配置和Anaconda
 
 ## python
 
@@ -90,6 +90,9 @@ conda update python
 [document](https://docs.conda.io/projects/conda/en/latest/commands/create.html)
 
 ```bash
+# 查看有哪些python版本可用
+conda search "^python$"
+
 conda create -n pack_env python=3.11
 
 # 参数
