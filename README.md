@@ -12,7 +12,7 @@ OneNote用于快速的记录
 
 ---
 
-- 环境搭建
+- environment configurations
 
 - shell
 
