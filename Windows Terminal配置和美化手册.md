@@ -6,7 +6,7 @@
 
 ## 1. 环境
 
-OS: Win10, x64, 21H2
+`OS: Win10, x64, 21H2`
 
 ## 2. 配置
 
@@ -16,7 +16,7 @@ OS: Win10, x64, 21H2
 
 ![winget](https://p0.meituan.net/dpplatform/ef14045f49dd8d8ae71d37fe93590fb522578.png)
 
-如果需要通过命令行安装, 需要注意在某些版本的win10, 包括未更新的21H2, PowerShell无法调用`winget`命令, 需要将`app installer(应用安装程序)`这个app升级到最新的版本, 才能调用`winget`.
+如果需要通过命令行安装, 需要注意在某些版本的`win10`, 包括未更新的`21H2`, PowerShell无法调用`winget`命令, 需要将`app installer(应用安装程序)`这个app升级到最新的版本, 才能调用`winget`.
 
 `winget`假如可以正常使用.
 
@@ -26,15 +26,15 @@ OS: Win10, x64, 21H2
 
 相关文件由于墙的原因, 访问非常不稳定, 有条件的最好开启翻墙的工具.
 
-Microsoft Store的访问也很不稳定, 最好开启传递优化, 这会大幅度提升下载文件的速度.
+`Microsoft Store`的访问也很不稳定, 最好开启传递优化, 这会大幅度提升下载文件的速度.
 
 ![optimzer](https://p0.meituan.net/dpplatform/b584796c5b602113175cb04b1e2193f430322.png)
 
-某些版本的Microsoft Store搜索不到oh-my-posh3, 最好升级到最新版本的Store, 但是store的更新需要系统升级.
+某些版本的`Microsoft Store`搜索不到o`h-my-posh3`, 最好升级到最新版本的`Store`, 但是`store`的更新需要系统升级.
 
 前置工作需要:
 
-- 更新Windows版本
+- 更新`Windows`版本
 - 更新微软商店
 - 更新应用安装程序
 - 准备爬墙
@@ -43,13 +43,13 @@ Microsoft Store的访问也很不稳定, 最好开启传递优化, 这会大幅�
 
 使用的是第三方的客户端, 而不是[Windows Terminal](https://www.microsoft.com/store/productId/9N0DX20HK701), 选用的时[Fluent Terminal](https://www.microsoft.com/store/productId/9P2KRLMFXF9T), 一款扁平化风格的终端管理器.
 
-Powershell使用的还是Windows内置的Powershell5.x(即Windows Powershell), 而不是微软推荐的Powershell 7(Powershell core).
+`Powershell`使用的还是`Windows`内置的`Powershell5.x`(即`Windows Powershell`), 而不是微软推荐的`Powershell 7(Powershell core)`.
 
-安装好Fluent Terminal之后
+安装好`Fluent Terminal`之后
 
-安装美化工具[oh-my-posh3](https://apps.microsoft.com/store/detail/XP8K0HKJFRXGCK)(注意不是posh2, 这个项目已经不在维护), 相关的美化主题位于安装目录之下的`oh-my-posh\themes`下, 该文件只需要安装即可.
+安装美化工具[oh-my-posh3](https://apps.microsoft.com/store/detail/XP8K0HKJFRXGCK)(注意不是`posh2`, 这个项目已经不在维护), 相关的美化主题位于安装目录之下的`oh-my-posh\themes`下, 该文件只需要安装即可.
 
-创建Powershell配置文件
+创建`Powershell`配置文件
 
 ```bash
 -- 调用notepad/其他的编辑器
@@ -70,7 +70,7 @@ oh-my-posh init pwsh --config $env:POSH_THEMES_PATH\material.omp.json | Invoke-E
 
 相关主题的[介绍](https://ohmyposh.dev/docs/themes)
 
-由于Powershell的安全策略, 默认阻止外部脚本的执行, 需要开启权限.
+由于`Powershell`的安全策略, 默认阻止外部脚本的执行, 需要开启权限.
 
 ```bash
 -- 允许本地用户执行脚本
@@ -79,13 +79,13 @@ Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 由于部分的主题使用了一些奇特的字符, 需要安装外部字体来解决乱码的问题.
 
-字体下载[地址](https://www.nerdfonts.com/font-downloads), 推荐字体DejaVuSansMono
+字体下载[地址](https://www.nerdfonts.com/font-downloads), 推荐字体`DejaVuSansMono`
 
 下载字体后, 安装即可(多个或一个).
 
 ![font](https://p0.meituan.net/dpplatform/f78806234cf2477a406c88b62d69fda331888.png)
 
-调整一下fluent terminal相关设置, 位Powershell添加启动参数.
+调整一下`fluent terminal`相关设置, 为`Powershell`添加启动参数.
 
 ![adjust](https://p0.meituan.net/dpplatform/cb49a545a0fe49328ed564314928647532632.png)
 
@@ -141,6 +141,12 @@ sudo apt install python3-pip
 | 方法2 | 输入`logout` |
 | 方法3 | 输入`exit`   |
 | 方法4 | `Ctrl + D`   |
+
+### 2.4 WSL2
+
+![2023-01-09 11 37 09.png](https://img1.imgtp.com/2023/01/09/BNyGqeWm.png)
+
+![2023-01-09 11 37 30.png](https://img1.imgtp.com/2023/01/09/dAzNVqpF.png)
 
 ## 3. Windows Terminal
 
