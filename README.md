@@ -9,3 +9,31 @@
 Markdown用于整理记录
 
 OneNote用于快速的记录
+
+---
+
+- 环境搭建
+
+- shell
+
+- ubuntu
+
+- python
+
+- mysql
+
+- mongodb
+
+- pandas
+
+- data visualization
+
+- algorithms
+
+- nlp
+
+- javascript
+
+- vba
+
+- one more thing...
