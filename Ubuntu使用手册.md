@@ -225,11 +225,189 @@ sudo service smbd restart
 > .bash_logoutt：当你退出shell时执行的命令.
 > .profile：当你登入shell时执行的命令。一般会在.profile文件中显式调用.bashrc，启动bash时首先会去读取/.profile文件，这样/.bashrc也就得到执行了，你的个性化设置也就生效了.
 
+### 1.8 压缩/解压
+
+| 参数 | 含义                                                |
+| ---- | --------------------------------------------------- |
+| tar  | Linux压缩/解压缩工具                                |
+| -z   | 代表gzip，使用gzip工具进行压缩或解压                |
+| -x   | 代表extract，解压文件（压缩文件是-c）               |
+| -v   | 代表verbose，显示解压过程（文件列表）               |
+| -f   | 代表file，指定要解压的文件名（or 要压缩成的文件名） |
+
+```bash
+tar -xvf zip_pack
+
+# 将文件解压到指定的文件夹
+tar -xvf zip_pack -C /test_foler
+```
+
+### 1.9 权限
+
+> **Linux file ownership**
+>
+> In Linux, there are three types of owners: `user`, `group`, and `others` .
+>
+> - Linux User
+>
+> A user is the default owner and creator of the file. So this user is called owner as well.
+>
+> - Linux Group
+>
+> A user-group is a collection of users. Users that belonging to a group will have the same Linux group permissions to access a file/ folder.
+>
+> You can use groups to assign permissions in a bulk instead of assigning them individually. A user can belong to more than one group as well.
+>
+> - Other
+>
+> Any users that are not part of the user or group classes belong to this class.
+
+> **Linux File Permissions**
+>
+> File permissions fall in three categories: `read`, `write`, and `execute`.
+>
+> - Read permission
+>
+> For regular files, read permissions allow users to open and read the file only. Users can't modify the file.
+>
+> Similarly for directories, read permissions allow the listing of directory content without any modification in the directory.
+>
+> - Write permission
+>
+> When files have write permissions, the user can modify (edit, delete) the file and save it.
+>
+> For folders, write permissions enable a user to modify its contents (create, delete, and rename the files inside it), and modify the contents of files that the user has write permissions to.
+>
+> - Execute permission
+>
+> For files, execute permissions allows the user to run an executable script. For directories, the user can access them, and access details about files in the directory.
+>
+> Below is the symbolic representation of permissions to user, group, and others.
+
+![image-163.png](https://img1.imgtp.com/2023/01/11/DT8l4cQ0.png)
+
+![image-164.png](https://img1.imgtp.com/2023/01/11/Q5kFxAC7.png)
+
+```bash
+sudo chmod -R 755 /var/run/mysqld
+```
+
+
+
+![image-165.png](https://img1.imgtp.com/2023/01/11/WBmy676s.png)
+
+![image-157.png](https://img1.imgtp.com/2023/01/11/PhtOi7Vp.png)
+
+```bash
+ls -l
+```
+
+![image-158.png](https://img1.imgtp.com/2023/01/11/ONMGNODR.png)
+
+> In the output above, `d` represents a directory and`-` represents a regular file.
+>
+> d代表目录, `-`代表常规文件
+
+#### 1.9.1 chown
+
+`chown`，change owner, 更改文件的所属用户及组.
+
+3, 4列, 文件所属用户及用户组.
+
+```bash
+$ ls -lah .
+total 1.2M
+drwxr-xr-x 11 shanyue shanyue 4.0K Jun 22 18:42 .
+drwxr-xr-x  5 root    root    4.0K Jun 24 11:06 ..
+drwxr-xr-x  2 shanyue shanyue 4.0K Jun 10 15:45 .circleci
+drwxr-xr-x  2 shanyue shanyue 4.0K Jun 10 15:45 .codesandbox
+-rw-r--r--  1 shanyue shanyue  294 May 22  2021 .editorconfig
+-rw-r--r--  1 shanyue shanyue  759 Jun 10 15:45 .eslintignore
+-rw-r--r--  1 shanyue shanyue 8.4K Jun 10 15:45 .eslintrc.js
+drwxr-xr-x  7 shanyue shanyue 4.0K Jun 14 19:06 .git
+-rw-r--r--  1 shanyue shanyue   12 May 22  2021 .gitattributes
+复制代码
+```
+
+通过 `chown -R`，可一并将子文件所属用户及用户组进行修改.
+
+```bash
+# 将 . 文件夹下当前目录的用户及用户组设为 shanyue
+# -R：遍历子文件修改
+$ chown -R shanyue:shanyue .
+```
+
+#### 1.9.2 chmod
+
+```bash
+chmod permissions filename
+```
+
+`mode` 指 `linux` 中对某个文件的访问权限. 通过 `stat` 可获取某个文件的 `mode`.
+
+```bash
+# -c：--format
+# %a：获得数字的 mode
+$ stat -c %a README.md
+644
+
+# %A：获得可读化的 mode
+$ stat -c %A README.md 
+-rw-r--r--
+```
+
+- r: 可读，二进制为 100，也就是 4
+- w: 可写，二进制为 010，也就是 2
+- x: 可执行，二进制为 001，也就是 1
+
+而 `linux`为多用户系统，我们可对用户进行以下分类。
+
+- user, 文件当前用户
+- group, 文件当前用户所属组
+- other, 其它用户
+
+再回到刚才的 `644` 所代表的的释义
+
+```bash
+# rw-：当前用户可写可读，110
+# r--：当前用户组可读，010
+# r--：其它用户可读，010
+# 所以加起来就是 644
+-rw-r--r--
+```
+
+而通过 `chmod` 即可修改用户的权限.
+
+```bash
+$ chmod 777 yarn.lock
+复制代码
+```
+
+另外也可以以可读化形式添加权限，如下所示：
+
+```bash
+# u: user
+# g: group
+# o: other
+# a: all
+# +-=: 增加减少复制
+# perms: 权限
+$ chmod [ugoa...][[+-=][perms...]...]
+
+# 为 yarn.lock 文件的用户所有者添加可读权限
+$ chmod u+r yarn.lock
+```
+
+- [参考链接](https://juejin.cn/post/7113919813529845768)
+- [Linux chmod and chown – How to Change File Permissions and Ownership in Linux (freecodecamp.org)](https://www.freecodecamp.org/news/linux-chmod-chown-change-file-permissions/)
+
 ---
 
 ## 二. Shell
 
 ```bash
+# 查看用户登录
+w
 # 清空终端的显示内容
 clear
 # 类似于powershell的 cls
@@ -259,6 +437,9 @@ service --status-all
 +: the service is running
 -: the service is not running
 ?: the service state cannot be determined (for some reason).
+
+# 清空回收站
+sudo rm -rf ~/.local/share/Trash/*
 ```
 
 ### 1.1 文件管理
@@ -296,10 +477,10 @@ rm(remove)指令用于删除目录或文件：
 例如：
 
 删除文件夹：
-                     rm -rf code
+                     rm -rf folder_name
                      将会删除code目录以及其下所有文件、文件夹。（-r递归）
 删除文件：
-                     rm -f  001.cpp
+                     rm -f  filename/path
 ```
 
 #### 1.1.1 查看文档内容
@@ -686,6 +867,8 @@ sudo apt install python3-pip
 
 ```bash
 # 下载安装包, 打开官网下载页, 找到linux即可
+# 过慢, 使用阿里镜像
+axel -n 10 https://mirrors.aliyun.com/anaconda/archive/Anaconda3-2022.10-Linux-x86_64.sh
 wget https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh
 
 # 下载好之后
@@ -701,7 +884,6 @@ by running conda init? [yes|no]
 [no] >>>
 # 这里可以选择自动初始化
 # 假如没有自动初始化
-
 
 # 打开环境变量配置文件
 
@@ -858,6 +1040,9 @@ sudo rm -r /var/lib/mongodb
   ```bash
   # 查看 mysql的连接情况
   sudo netstat -anp | grep mysql
+  
+  # 查看端口开放
+  netstat -ano
   
   # 动态的状态获取
   sudo service mysql status
@@ -1088,7 +1273,7 @@ deb-src http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted univer
 
 复制上述内容
 
-Ctrl + O保存
+Ctrl + O保存 =>> enter
 Ctrl + X退出
 
 # 查看修改的内容
@@ -1143,15 +1328,18 @@ E: Unable to correct problems, you have held broken packages.
 
 ```bash
 # 安装aptitude, 可以将对应的包的版本降低
+# 必须
 sudo apt-get install aptitude
 
 # 包的名称就是如此libevent-core-2.1-7, 不要去掉数字
+$ 必须
 sudo aptitude install libevent-core-2.1-7=2.1.11-stable-1
 # =2.1.11-stable-1, 不允许存在空格
 ```
 
 ```bash
 # 再次安装
+# 必须
 sudo apt install mysql-server
 ```
 
@@ -1188,6 +1376,7 @@ sudo service mysql start/stop
 sudo service mysql stop
 
 # 关键的一步
+# 必须
 sudo usermod -d /var/lib/mysql/ mysql
 # 这一步消除了上面的警告
 
@@ -1209,6 +1398,7 @@ sudo vim /etc/mysql/mysql.conf.d/mysqld.cnf
 ```
 
 ```bash
+# 必须
 alex@DESKTOP-F6VO5U4:/mnt/c/Users/Lian$ sudo cat /etc/mysql/mysql.conf.d/mysqld.cnf
 # 将文件的内容[mysqld] 下的 sock, pid等注释取消掉
 # 端口从3306改成3307, 以作为和主机上的MySQL作为区分
@@ -1222,7 +1412,7 @@ alex@DESKTOP-F6VO5U4:/mnt/c/Users/Lian$ sudo cat /etc/mysql/mysql.conf.d/mysqld.
 # --print-defaults to see which it would actually understand and use.
 #
 # For explanations see
-# http://dev.mysql.com/doc/mysql/en/server-system-variables.html
+# http://dev.mysql.com/doc/mysql/en/s:erver-system-variables.html
 
 # Here is entries for some specific programs
 # The following values assume you have at least 32M ram
@@ -1294,13 +1484,19 @@ max_binlog_size   = 100M
 ```
 
 ```bash
+# 必须
 sudo mkdir -p /var/run/mysqld
-sudo chown mysql /var/run/mysqld/
+# 必须
+sudo chmod -R 755 /var/run/mysqld
+# sudo chown mysql /var/run/mysqld/
 sudo service mysql start
 
+# sudo chown mysql /var/run/mysqld/mysqld.sock
+
+# 必须
 sudo mysql
 # 为root账号添加密码
-ALTER USER 'root'@'localhost' IDENTIFIED BY '123456';
+ ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '123456';
 # 再次登录
 mysql -uroot -p
 
@@ -1308,9 +1504,12 @@ mysql -uroot -p
 
 # 如果还是出现问题
 # ERROR 2002 (HY000): Can't connect to local MySQL server through socket '/tmp/mysql.sock' (2)
+# 备用
+-----------------------
 sudo service mysql stop
 ln -s /var/run/mysqld/mysqld.sock
 sudo service mysql start
+----------------------------------
 
 # 查看端口开放情况
 show global variables like 'port';
@@ -1327,6 +1526,91 @@ show global variables like 'port';
 ![2023-01-09 16 20 22.png](https://img1.imgtp.com/2023/01/09/8ZmkpO2P.png)
 
 注意`Ubuntu`将被初始化, 所有的东西都将抹掉, 包括账号和密码.
+
+### 6.6 nodejs
+
+微软官方文档提供的方式, 需要文件都需要从`GitHub`中下载, 没有梯子, 无法下载.
+
+```bash
+# 直接安装可以运行
+sudo apt-get install nodejs
+
+# 版本已经老旧, 新版本lts, 已经更新到18
+alex@DESKTOP-F6VO5U4:~$ node --version
+v10.19.0
+```
+
+直接下载官方网站的[linux_nodejs_tar](https://nodejs.org/dist/v18.13.0/node-v18.13.0-linux-x64.tar.xz), 解压后添加环境变量的方式, 并无法运行.
+
+```bash
+export PATH=/home/alex/linux_nodejs/bin:$PATH
+```
+
+这里改成从`gitee`提供的[镜像地址](https://gitee.com/mirrors/nvm)
+
+```bash
+# clone 
+git clone https://gitee.com/mirrors/nvm
+# 进入目录查看
+cd nvm
+# 查看文件
+ls
+# 执行脚本
+bash install.sh
+```
+
+安装好脚本, 注意需要**`重启`**终端.
+
+```bash
+alx@DESKTOP-F6VO5U4:~$ nvm --version
+0.39.3
+```
+
+这里显示`nvm`的版本, 即证明`nvm`正常的安装好了.
+
+```bash
+alx@DESKTOP-F6VO5U4:~$ nvm install --lts
+Installing latest LTS version.
+Downloading and installing node v18.13.0...
+Downloading https://nodejs.org/dist/v18.13.0/node-v18.13.0-linux-x64.tar.xz...
+################################################################################################################# 100.0%
+Computing checksum with sha256sum
+Checksums matched!
+Now using node v18.13.0 (npm v8.19.3)
+Creating default alias: default -> lts/* (-> v18.13.0)
+alx@DESKTOP-F6VO5U4:~$ node --version
+v18.13.0
+alx@DESKTOP-F6VO5U4:~$ ls
+nvm
+alx@DESKTOP-F6VO5U4:~$ npm --version
+8.19.3
+alx@DESKTOP-F6VO5U4:~$
+```
+
+![2023-01-11 13 49 22.png](https://img1.imgtp.com/2023/01/11/qX8lmZtp.png)
+
+```bash
+sudo vim /.bashrc
+# 设置国内镜像
+export NVM_NODEJS_ORG_MIRROR=http://npm.taobao.org/mirrors/node
+
+echo $NVM_NODEJS_ORG_MIRROR
+
+# node_mirror: https://npm.taobao.org/mirrors/node/
+# npm_mirror: https://npm.taobao.org/mirrors/npm/
+
+# 设置npm镜像
+npm config set registry https://registry.npm.taobao.org
+npm config set disturl https://npm.taobao.org/dist
+npm config set electron_mirror https://npm.taobao.org/mirrors/electron/
+npm config set sass_binary_site https://npm.taobao.org/mirrors/node-sass/
+npm config set phantomjs_cdnurl https://npm.taobao.org/mirrors/phantomjs/
+
+# 查看
+npm get registry
+```
+
+
 
 ---
 
@@ -1389,8 +1673,7 @@ show global variables like 'port';
 ```bash
 sudo crontab -e -u root
 # -e就是用当前登录用户的角色去执行
-
-sudo crontab 任务自动执行
+# sudo crontab 任务自动执行
 ```
 
 | Element | Linux Name | Meaning                                                      |
@@ -1406,9 +1689,9 @@ sudo crontab 任务自动执行
 选择: nano
 
 # 在文件的底部添加下列内容
-# /15表示15分钟执行一次
+# /45表示45分钟执行一次
 # 相关设置见上面的介绍
-*/15 * * * * sync; echo 3 > /proc/sys/vm/drop_caches; touch /root/drop_caches_last_run
+*/45 * * * * sync; echo 3 > /proc/sys/vm/drop_caches; touch /root/drop_caches_last_run
 ```
 
 ```bash
@@ -1455,6 +1738,33 @@ alex@DESKTOP-F6VO5U4:/mnt/c/Users/Lian$ sudo stat -c '%y' /root/drop_caches_last
 
 ## 九. 问题
 
-- MySQL添加了自启动, 但是还是开机没有自启动.(可能是微软为了加速`wsl`启动`Ubuntu`的考虑, 将绝大部分的服务都禁止自启动?)
+- 按照上述的`apt`方式安装`MySQL`
+
+  ```bash
+  sudo service mysql status
+  # 正常这个状态会显示出来
+  
+  # 直接显示没有安装
+  alex@DESKTOP-F6VO5U4:~$ rpm -q mysql
+  package mysql is not installed
+  
+  # 但是在dpkg -l下是可以看到MySQL已经被安装
+  
+  alex@DESKTOP-F6VO5U4:~$ sudo mysql
+  [sudo] password for alex:
+  ERROR 2002 (HY000): Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock' (2)
+  
+  # 服务无法识别
+  sudo service mysql start
+  
+  # 和权限有关?
+  chmod -R 770 /var/lib/mysql
+  # 暂未测试
+  # mysql: unrecognized service
+  ```
+
+- `MySQL`添加了自启动, 但是还是开机没有自启动.(可能是微软为了加速`wsl`启动`Ubuntu`的考虑, 将绝大部分的服务都禁止自启动?)
+
 - 大量的依赖包, 需要更低版本的支持, 就算是已经安装有.
-- 一些服务找不到.
+
+- 一些服务找不到?
