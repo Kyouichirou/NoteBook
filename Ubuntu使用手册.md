@@ -74,9 +74,9 @@ snapd-desktop-integration  0.1               49     latest/stable/…  canonical
 
 ### 1.5 文件共享
 
-Windows10上非常简易的文件共享的实现.
+`Windows10`上非常简易的文件共享的实现.
 
-> Samba是在Linux系统上实现的SMB（Server Messages Block，信息服务块）协议的一款免费软件。它实现在局域网内共享文件和打印机，是一个客户机/服务器型协议。客户机通过SMB协议访问服务器上的共享文件系统。可以实现Windows系统访问Linux系统上的共享资源
+> `Samba`是在`Linux`系统上实现的`SMB`（`Server Messages Block`，信息服务块）协议的一款免费软件。它实现在局域网内共享文件和打印机，是一个客户机/服务器型协议。客户机通过`SMB`协议访问服务器上的共享文件系统。可以实现`Windows`系统访问`Linux`系统上的共享资源
 
 ```bash
 sudo apt-get install samba
@@ -227,6 +227,19 @@ sudo service smbd restart
 
 ### 1.8 压缩/解压
 
+常见的压缩格式:
+
+> .zip, .gz, .bz2, .tar, .tar.gz, .tar.bz2
+
+```bash
+# 对同一文件压缩
+# 最大压缩率
+-rw-r--r-- 1 alex alex 334K Jan 12 10:34 123.jpg.gz
+-rw-r--r-- 1 alex alex 340K Jan 12 10:36 123.tar
+-rw-r--r-- 1 alex alex 340K Jan 12 10:42 123.tar.bz2
+-rw-r--r-- 1 alex alex 334K Jan 12 10:40 123.zip
+```
+
 | 参数 | 含义                                                |
 | ---- | --------------------------------------------------- |
 | tar  | Linux压缩/解压缩工具                                |
@@ -236,11 +249,144 @@ sudo service smbd restart
 | -f   | 代表file，指定要解压的文件名（or 要压缩成的文件名） |
 
 ```bash
+# 解压文件
 tar -xvf zip_pack
 
 # 将文件解压到指定的文件夹
 tar -xvf zip_pack -C /test_foler
+
+# 查看压缩包内容
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ tar tvf test.tar
+drwxr-xr-x alex/alex         0 2023-01-11 21:32 a/
+-rw-r--r-- alex/alex         0 2023-01-11 21:32 a/2.txt
+-rw-r--r-- alex/alex         0 2023-01-11 21:32 a/1.txt
+
+# 将文件夹压缩
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ tar -cvf test.tar a
+a/
+a/2.txt
+a/1.txt
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ ls
+a  a.txt  b  b.txt  test.tar
+
+# 默认支持递归压缩
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ tar -cvf 3.tar c
+c/
+c/c1.txt
+c/d/
+c/d/d1.txt
+
+# 不要压缩包的顶级目录在解压时, --strip-components 1
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ tar -xvf 3.tar -C test_no_top --strip-components 1
+c/c1.txt
+c/d/
+c/d/d1.txt
+
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ ls test_no_top/ -R
+test_no_top/:
+c1.txt  d
+
+test_no_top/d:
+d1.txt
 ```
+
+```bash
+# 没有预装, 需要手动安装
+sudo apt-get install zip
+
+# 注意这个坑,当指定的是文件夹, 它并没有加压文件夹内的内容
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -sf 1.zip
+Archive contains:
+  a/
+Total 1 entries (0 bytes)
+
+# 多层级的目录, 也是如此, -r, 实际上就是递归获取文件进行加压
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -r 3.zip c
+  adding: c/ (stored 0%)
+  adding: c/c1.txt (stored 0%)
+  adding: c/d/ (stored 0%)
+  adding: c/d/d1.txt (stored 0%)
+
+# 需要使用参数 -r
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -r 1.zip a
+  adding: a/ (stored 0%)
+  adding: a/2.txt (stored 0%)
+  adding: a/1.txt (stored 0%)
+  adding: a/3.txt (stored 0%)
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -sf 1.zip
+Archive contains:
+  a/
+  a/2.txt
+  a/1.txt
+  a/3.txt
+Total 4 entries (0 bytes)
+
+# zip 解压缩
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip test.zip a
+  adding: a/ (stored 0%)
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ ls
+a  a.txt  b  b.txt  test.tar  test.zip
+
+# 添加文件到现有的压缩包
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -m test.zip ./b/b1.txt
+  adding: b/b1.txt (deflated 4%)
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -v test.zip
+
+# 压缩文件夹后删除源文件
+zip a.zip a | rm -rf a
+
+
+zip error: Nothing to do! (test.zip)
+# 查看压缩包, 但不解压
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -sf test.zip
+Archive contains:
+  a/
+  b/b1.txt
+Total 2 entries (27 bytes)
+
+# 查看压缩情况
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ unzip -v test.zip
+Archive:  test.zip
+ Length   Method    Size  Cmpr    Date    Time   CRC-32   Name
+--------  ------  ------- ---- ---------- ----- --------  ----
+       0  Stored        0   0% 2023-01-11 21:32 00000000  a/
+      27  Defl:N       26   4% 2023-01-12 09:49 669df147  b/b1.txt
+--------          -------  ---                            -------
+      27               26   4%                            2 files
+```
+
+zip支持参数
+
+语法结构：`zip [-options] [-b path] [-t mmddyyyy] [-n suffixes] [zipfile list] [-xi list]`
+
+- -f 更新现有的文件
+- -u 与-f参数类似，但是除了更新现有的文件外，也会将压缩文件中的其他文件解压缩到目录中
+- -d 指定文件解压缩后所要存储的目录
+- -m 将文件压缩并加入压缩文件后，删除原始文件，即把文件移到压缩文件中
+- -r 将指定的目录下的所有子目录以及文件一起处理
+- -j 不处理压缩文件中原有的目录路径
+- -0 在存储，不压缩
+- -l 显示压缩文件内所包含的文件
+- -1 较快速度的压缩
+- -9 较高质量的压缩
+- -q 安静模式，在压缩的时候不显示指令的执行过程
+- -v 执行是时显示详细的信息
+- -c 将解压缩的结果显示到屏幕上，并对字符做适当的转换
+- -z 仅显示压缩文件的备注文字
+- -@ 从标准输入中读取名称，一个路径名称用一行
+- -o 将压缩文件内的所有文件的最新变动时间设为压缩时候的时间
+- -x 指定不要处理.zip压缩文件中的哪些文件
+- -i 只压缩符合条件的文件
+- -F 尝试修复损坏的压缩文件
+- -D 压缩文件内不建立目录名称
+- -A 调整可执行的自动解压缩文件
+- -J 删除可执行文件，留下一个普通的zip归档文件
+- -T 检查备份文件内的每个文件是否正确无误
+- -X 解压缩时同时回存文件原来的UID/GID
+- -y 直接保存符号连接，而非该连接所指向的文件，本参数仅在UNIX之类的系统下有效
+- -e 加密
+- -n 不压缩具有特定字尾字符串的文件
+- -h2 显示更多帮助
 
 ### 1.9 权限
 
@@ -360,11 +506,11 @@ $ stat -c %A README.md
 - w: 可写，二进制为 010，也就是 2
 - x: 可执行，二进制为 001，也就是 1
 
-而 `linux`为多用户系统，我们可对用户进行以下分类。
+而 `linux`为多用户系统，我们可对用户进行以下分类.
 
-- user, 文件当前用户
-- group, 文件当前用户所属组
-- other, 其它用户
+- `user`, 文件当前用户
+- `group`, 文件当前用户所属组
+- `other`, 其它用户
 
 再回到刚才的 `644` 所代表的的释义
 
@@ -461,6 +607,7 @@ hello.txt
 | mkdir 目录名        | 创建目录(文件夹)     |
 | rm 文件名或者目录名 | 删除指定文件或者目录 |
 | rmdir 目录名        | 删除空目录           |
+| ls                  | 查看文件             |
 
 ```bash
 # 删除文件
@@ -481,6 +628,15 @@ rm(remove)指令用于删除目录或文件：
                      将会删除code目录以及其下所有文件、文件夹。（-r递归）
 删除文件：
                      rm -f  filename/path
+```
+
+```bash
+# 创建多级目录
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ mkdir c/d
+mkdir: cannot create directory ‘c/d’: No such file or directory
+
+# 需要加上 -p
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ mkdir c/d -p
 ```
 
 #### 1.1.1 查看文档内容
@@ -594,6 +750,187 @@ vi python_test/hello.txt
 以下的这些命令都只能在命令模式下使用，所以首先需要按下 `Esc` 进入命令模式，如果你正处于插入模式.
 
 注意vi/vim区分`大小写`.
+
+#### 1.1.4 目录结构
+
+- `/boot`, 存放`Ubuntu`内核和系统启动文件。系统启动时这些文件先被装载.
+- `/etc`, 系统的配置文件目录. 密码文件、设置网卡信息、环境变量的设置等都在此目录中，许多网络配置文件也在其中.
+- `/bin`, `bin` 是 `Binaries` (二进制文件) 的缩写, 这个目录存放着最经常使用的命令.
+- `/lib`, 根文件系统目录下程序和核心模块的共享库. 这个目录里存放着系统最基本的动态链接共享库, 类似于`Windows`下的`system32`目录，几乎所有的应用程序都需要用到这些共享库.
+- `/media`, 主要用于挂载多媒体设备. `ubuntu`系统自动挂载的光驱, `usb`设备, 存放临时读入的文件.
+- `/proc`, 这个目录是系统内存的映射，我们可以直接访问这个目录来获取系统信息。也就是说，这个目录的内容不在硬盘上而是在内存里.
+- `/sbin`, 就是`Super User`的意思. 这里存放的是系统管理员使用的系统管理程序, 如系统管理, 目录查询等关键命令文件.
+- `/root`, 该目录为系统管理员, 也称作超级权限者的用户主目录.
+- `/tmp`, 这个目录是用来存放一些临时文件的，所有用户对此目录都有读写权限.
+- `/home`,  用户的主目录. 下面是自己定义的用户名的文件夹. 每个用户的设置文件，用户的桌面文件夹，还有用户的数据都放在这里.
+- `/mnt`,  此目录主要是作为挂载点使用. 通常包括系统引导后被挂载的文件系统的挂载点. 如挂载`Windows`下的某个分区
+- `/run`, 是一个临时文件系统，存储系统启动以来的信息。当系统重启时，这个目录下的文件应该被删掉或清除. 如果你的系统上有 `/var/run` 目录，应该让它指向 `run`.
+- `/var`, `var` 是 `variable`(变量) 的缩写，这个目录中存放着在不断扩充着的东西，我们习惯将那些经常被修改的目录放在这个目录下, 包括各种日志文件.
+
+![2023-01-12 11 18 57.png](https://img1.imgtp.com/2023/01/12/vx1dEqrh.png)
+
+在`Terminal`上打开`wsl`, 载入的初始目录.
+
+目录的相对路径的表示方法: 
+
+- `./`, 表示当前目录
+- `..`, 表示上级目录
+- `/`, 是指根目录, 即所有目录最顶层的目录.
+- `~ `表示当前登录用户的用户目录.
+
+#### 1.1.5 查看文件目录
+
+```bash
+# 指定查看文件夹
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ ls [a]
+1.txt  2.txt
+
+# 都可以显示隐藏的文件
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ ls -a
+.  ..  a  a.txt  b  b.txt
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ ls -l
+total 16
+drwxr-xr-x 2 alex alex 4096 Jan 11 21:32 a
+-rw-r--r-- 1 alex alex   44 Jan 11 21:28 a.txt
+drwxr-xr-x 2 alex alex 4096 Jan 11 21:30 b
+-rw-r--r-- 1 alex alex   29 Jan 11 21:28 b.txt
+
+# 文件大小
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ ls -a -l -h
+total 24K
+drwxr-xr-x 4 alex alex 4.0K Jan 11 21:30 .
+drwxr-x--- 9 alex alex 4.0K Jan 11 21:28 ..
+drwxr-xr-x 2 alex alex 4.0K Jan 11 21:32 a
+-rw-r--r-- 1 alex alex   44 Jan 11 21:28 a.txt
+drwxr-xr-x 2 alex alex 4.0K Jan 11 21:30 b
+-rw-r--r-- 1 alex alex   29 Jan 11 21:28 b.txt
+
+# 正则表达式
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ ls a*
+a.txt
+
+a:
+1.txt  2.txt
+
+# 查看文件夹下包括子文件夹下, 全部内容
+ls -al -R
+
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ ls -al -R
+.:
+total 24
+drwxr-xr-x 4 alex alex 4096 Jan 11 21:30 .
+drwxr-x--- 9 alex alex 4096 Jan 11 21:28 ..
+drwxr-xr-x 2 alex alex 4096 Jan 11 21:32 a
+-rw-r--r-- 1 alex alex   44 Jan 11 21:28 a.txt
+drwxr-xr-x 2 alex alex 4096 Jan 11 21:30 b
+-rw-r--r-- 1 alex alex   29 Jan 11 21:28 b.txt
+
+./a:
+total 8
+drwxr-xr-x 2 alex alex 4096 Jan 11 21:32 .
+drwxr-xr-x 4 alex alex 4096 Jan 11 21:30 ..
+-rw-r--r-- 1 alex alex    0 Jan 11 21:32 1.txt
+-rw-r--r-- 1 alex alex    0 Jan 11 21:32 2.txt
+
+./b:
+total 8
+drwxr-xr-x 2 alex alex 4096 Jan 11 21:30 .
+drwxr-xr-x 4 alex alex 4096 Jan 11 21:30 ..  
+
+--------------------------------------------------
+Mandatory arguments to long options are mandatory for short options too.
+  -a, --all                  do not ignore entries starting with .
+  -A, --almost-all           do not list implied . and ..
+      --author               with -l, print the author of each file
+  -b, --escape               print C-style escapes for nongraphic characters
+      --block-size=SIZE      with -l, scale sizes by SIZE when printing them;
+                               e.g., '--block-size=M'; see SIZE format below
+  -B, --ignore-backups       do not list implied entries ending with ~
+  -c                         with -lt: sort by, and show, ctime (time of last
+                               modification of file status information);
+                               with -l: show ctime and sort by name;
+                               otherwise: sort by ctime, newest first
+  -C                         list entries by columns
+      --color[=WHEN]         colorize the output; WHEN can be 'always' (default
+                               if omitted), 'auto', or 'never'; more info below
+  -d, --directory            list directories themselves, not their contents
+  -D, --dired                generate output designed for Emacs' dired mode
+  -f                         do not sort, enable -aU, disable -ls --color
+  -F, --classify             append indicator (one of */=>@|) to entries
+      --file-type            likewise, except do not append '*'
+      --format=WORD          across -x, commas -m, horizontal -x, long -l,
+                               single-column -1, verbose -l, vertical -C
+      --full-time            like -l --time-style=full-iso
+  -g                         like -l, but do not list owner
+      --group-directories-first
+                             group directories before files;
+                               can be augmented with a --sort option, but any
+                               use of --sort=none (-U) disables grouping
+  -G, --no-group             in a long listing, don't print group names
+  -h, --human-readable       with -l and -s, print sizes like 1K 234M 2G etc.
+      --si                   likewise, but use powers of 1000 not 1024
+  -H, --dereference-command-line
+                             follow symbolic links listed on the command line
+      --dereference-command-line-symlink-to-dir
+                             follow each command line symbolic link
+                               that points to a directory
+      --hide=PATTERN         do not list implied entries matching shell PATTERN
+                               (overridden by -a or -A)
+      --hyperlink[=WHEN]     hyperlink file names; WHEN can be 'always'
+                               (default if omitted), 'auto', or 'never'
+      --indicator-style=WORD  append indicator with style WORD to entry names:
+                               none (default), slash (-p),
+                               file-type (--file-type), classify (-F)
+  -i, --inode                print the index number of each file
+  -I, --ignore=PATTERN       do not list implied entries matching shell PATTERN
+  -k, --kibibytes            default to 1024-byte blocks for disk usage;
+                               used only with -s and per directory totals
+  -l                         use a long listing format
+  -L, --dereference          when showing file information for a symbolic
+                               link, show information for the file the link
+                               references rather than for the link itself
+  -m                         fill width with a comma separated list of entries
+  -n, --numeric-uid-gid      like -l, but list numeric user and group IDs
+  -N, --literal              print entry names without quoting
+  -o                         like -l, but do not list group information
+  -p, --indicator-style=slash
+                             append / indicator to directories
+  -q, --hide-control-chars   print ? instead of nongraphic characters
+      --show-control-chars   show nongraphic characters as-is (the default,
+                               unless program is 'ls' and output is a terminal)
+  -Q, --quote-name           enclose entry names in double quotes
+      --quoting-style=WORD   use quoting style WORD for entry names:
+                               literal, locale, shell, shell-always,
+                               shell-escape, shell-escape-always, c, escape
+                               (overrides QUOTING_STYLE environment variable)
+  -r, --reverse              reverse order while sorting
+  -R, --recursive            list subdirectories recursively
+  -s, --size                 print the allocated size of each file, in blocks
+  -S                         sort by file size, largest first
+      --sort=WORD            sort by WORD instead of name: none (-U), size (-S),
+                               time (-t), version (-v), extension (-X)
+      --time=WORD            change the default of using modification times;
+                               access time (-u): atime, access, use;
+                               change time (-c): ctime, status;
+                               birth time: birth, creation;
+                             with -l, WORD determines which time to show;
+                             with --sort=time, sort by WORD (newest first)
+      --time-style=TIME_STYLE  time/date format with -l; see TIME_STYLE below
+  -t                         sort by time, newest first; see --time
+  -T, --tabsize=COLS         assume tab stops at each COLS instead of 8
+  -u                         with -lt: sort by, and show, access time;
+                               with -l: show access time and sort by name;
+                               otherwise: sort by access time, newest first
+  -U                         do not sort; list entries in directory order
+  -v                         natural sort of (version) numbers within text
+  -w, --width=COLS           set output width to COLS.  0 means no limit
+  -x                         list entries by lines instead of by columns
+  -X                         sort alphabetically by entry extension
+  -Z, --context              print any security context of each file
+  -1                         list one file per line.  Avoid '\n' with -q or -b
+      --help     display this help and exit
+      --version  output version information and exit
+```
 
 ### 1.2 vim/vi
 
@@ -1768,3 +2105,5 @@ alex@DESKTOP-F6VO5U4:/mnt/c/Users/Lian$ sudo stat -c '%y' /root/drop_caches_last
 - 大量的依赖包, 需要更低版本的支持, 就算是已经安装有.
 
 - 一些服务找不到?
+
+- `Ubuntu`的Windows启动的shell界面, 会出现光标乱动的情况.
