@@ -1066,13 +1066,11 @@ su - USERNAME切换用户后，同时切换到新用户的工作环境中。
 
 su USERNAME切换用户后，不改变原用户的工作目录，及其他环境变量目录。
 
-
-
 su -
 
 su -，su -l或su --login 命令改变身份时，也同时变更工作目录，以及HOME，SHELL，USER，LOGNAME。此外，也会变更PATH变量。用su -命令则默认转换成成root用户了。
 
-而不带参数的“su命令”不会改变当前工作目录以及HOME,SHELL,USER,LOGNAME。只是拥有了root的权限而已。
+而不带参数的`su命令`不会改变当前工作目录以及`HOME,SHELL,USER,LOGNAME`. 只是拥有了`root`的权限而已。
 
 注意：su -使用root的密码,而sudo su使用用户密码
 ```
@@ -1232,6 +1230,7 @@ export PATH=/home/alex/anaconda3/bin:$PATH
 # 保存
 # 重新载入环境变量, 即可取代原有的python
 source /etc/profile
+# 如果不生效, logout => 再登录进Ubuntu
 ----------------------------------------------------------------------------
 # 添加conda到环境变量
 source ~/.bashrc
@@ -1263,9 +1262,7 @@ PATH=/usr/xxx/bin:/usr/xxx/local/bin
 pip config set global.index-url https://repo.huaweicloud.com/repository/pypi/simple
 ```
 
-
-
-卸载anaconda
+卸载`anaconda`
 
 ```bash
 conda install anaconda-clean
@@ -1669,7 +1666,7 @@ E: Unable to correct problems, you have held broken packages.
 sudo apt-get install aptitude
 
 # 包的名称就是如此libevent-core-2.1-7, 不要去掉数字
-$ 必须
+# 必须
 sudo aptitude install libevent-core-2.1-7=2.1.11-stable-1
 # =2.1.11-stable-1, 不允许存在空格
 ```
@@ -1680,7 +1677,7 @@ sudo aptitude install libevent-core-2.1-7=2.1.11-stable-1
 sudo apt install mysql-server
 ```
 
-安装过程和上面的APT的配置包安装的方式不一样, 这个过程是没有配置界面的.
+安装过程和上面的`APT`的配置包安装的方式不一样, 整个过程是没有配置图形界面.
 
 ```bash
 cat /var/log/mysql/error.log
@@ -1856,13 +1853,18 @@ show global variables like 'port';
 
 ![2023-01-09 16 18 21.png](https://img1.imgtp.com/2023/01/09/dpRPhizQ.png)
 
+```bash
+# 安装python/connector
+pip install mysql-connector-python
+```
+
 至此, 整个配置过程完成, 由于缺乏文档, 以及搜索得到的结果, 绝大部分都不靠谱, 花了不少时间在各种测试上.
 
 如果将`Ubuntu`玩崩了, 可以在`application`下, 找到`Ubuntu`, 高级设置, 重置即可.
 
 ![2023-01-09 16 20 22.png](https://img1.imgtp.com/2023/01/09/8ZmkpO2P.png)
 
-注意`Ubuntu`将被初始化, 所有的东西都将抹掉, 包括账号和密码.
+注意`Ubuntu`将被初始化, 所有的东西都将抹掉, 包括`账号`和`密码`.
 
 ### 6.6 nodejs
 
@@ -1947,15 +1949,13 @@ npm config set phantomjs_cdnurl https://npm.taobao.org/mirrors/phantomjs/
 npm get registry
 ```
 
-
-
 ---
 
 ## 七. Pycharm
 
 - 专业版要求, [Buy PyCharm Professional: Pricing and Licensing, Discounts - JetBrains Toolbox Subscription](https://www.jetbrains.com/pycharm/buy/)
 
-在`pycharm`中使用`wsl(Ubuntu)`中的`python`作为解释器, 这里需要注意, `pycharm`要实现这个功能, 必须是`专业版`(`professional`)才支持, 社区版是不支持加载远端解释器的功能的.
+在`pycharm`中使用`wsl(Ubuntu)`中的`python`作为解释器, 这里需要注意, `pycharm`要实现这个功能, 必须是`专业版`(`professional`)才支持, 社区版是不支持加载`远端解释器(remote interpreter)`的功能的.
 
 这里的实现并不需要在`Ubuntu`中安装`SSH`.
 
@@ -1965,21 +1965,21 @@ npm get registry
 
 在终端(`Terminal`)中, 可以看到`wsl`下的`python`
 
-作为解释器, 添加到`pycharm`.
+作为解释器, 添加到`pycharm`, 需要完成专业版的获取.
 
 首先需要获得专业版的使用, 由于专业版不能直接试用, 需要注册账号才能试用, 颇为麻烦, 以下为通过非常规手段获取专业版的使用.
 
 其中关键在于一个大神分享的一个组件[`ja-netfilter pycharm2022`](https://cn.bing.com/search?q=ja-netfilter+pycharm2022&qs=UT&pq=ja-netfilter+pycha&sk=CT1&sc=7-18&cvid=71A996F3C940482DA9D30815AF52D43C&setmkt=zh-cn&FORM=QBRE&sp=2)
 
-- 下载好[`ja-netfilter`](https://gitee.com/ja-netfilter/ja-netfilter), 将其解压出来, 放置到一个固定的位置(路径不要存在`空格`, `中文`)
+- 下载好[`ja-netfilter`](https://gitee.com/ja-netfilter/ja-netfilter), 将其解压出来, 放置到一个固定的位置(路径**不要**存在`空格`, `中文`)
 
 - 安装好`pycharm`
 
 - 打开`pycharm`
 
-  关键就在于这一步, 打开`pycharm`并无法直接进入界面进行操作, 必须选择一种激活方式.
+  关键就在于这一步, 打开`pycharm`并无法直接进入界面进行操作, 必须选择一种`激活方式`.
 
-  选择激活码的方式(*这里不提供激活码*), 激活之后进入界面, help => 编辑此文件.
+  选择`激活码`的方式(*这里不提供激活码*), 激活之后进入界面, help => 编辑此文件.
 
   ![2023-01-10 11 39 37.png](https://img1.imgtp.com/2023/01/10/jBcrgRn9.png)
 
@@ -2069,6 +2069,8 @@ alex@DESKTOP-F6VO5U4:/mnt/c/Users/Lian$ sudo stat -c '%y' /root/drop_caches_last
 2023-01-10 10:15:01.486487600 +0800
 ```
 
+经过上述的设置, 占用得到控制, 内存的波动范围在 `200 - 800M`波动.
+
 - [参考链接-wsl导致vmmem占用高解决办法](https://zhuanlan.zhihu.com/p/166102340)
 
 ---
@@ -2106,4 +2108,4 @@ alex@DESKTOP-F6VO5U4:/mnt/c/Users/Lian$ sudo stat -c '%y' /root/drop_caches_last
 
 - 一些服务找不到?
 
-- `Ubuntu`的Windows启动的shell界面, 会出现光标乱动的情况.
+- `Ubuntu`的`Windows`启动的`shell`界面, 会出现光标乱动的情况(特别是输出大量内容后, 光标的位置很容易出现乱跳).
