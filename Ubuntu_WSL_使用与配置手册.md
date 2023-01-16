@@ -1987,9 +1987,37 @@ npm config set phantomjs_cdnurl https://npm.taobao.org/mirrors/phantomjs/
 npm get registry
 ```
 
----
+### 6.7 备份和还原
 
-## 七. Pycharm
+先关闭`wsl`
+
+```bash
+# 删除 wsl --unregister Ubuntu-20.04
+# wsl --export 发行版本号, 路径
+wsl --export Ubuntu-22.04 D:\wsl2_ubuntu22\base_settings_mysql_version.tar
+
+# 恢复
+wsl --import Ubuntu-22.04 D:\wsl2_ubuntu22\base_settings_mysql_version.tar
+```
+
+> **注意**：还原后的子系统进入后, 默认成了 root 用户, 查了一下，解决方法如下：
+>
+> 1. 如果在商店安装过 Ubuntu 直接找到如下目录：
+>
+> ```
+> C:\C:\Users\用户名\AppData\Local\Microsoft\WindowsApps\ubuntu版本.exe config --default-user root
+> ```
+>
+> 执行指令修改为指定用户：
+>
+> ```
+> ubuntu.exe config --default-user crazyang  #名称根据实际修改
+> ```
+>
+> 1. 如果电脑上之前没有安装过 WSL，是通过还原来的，可以下载 Windows Terminal 工具，然后进入设置中，指定启动的命令行 -u xxx即可，但是这种方式如果换成其他连接 WSL 的工具还是默认 root 用户。
+> 2. 如果还是想要通过 `ubuntu.exe config --default-user xxx` 这种方式设置默认用户，目前最可靠的方法是下载离线的 Ubuntu WSL 安装包，安装包中就有 ubuntu2004.exe，然后通过这个ubuntu2004.exe 执行 `config --default-user xxx` 命令，就可以一直默认为设置的用户了，下载链接：https://docs.microsoft.com/en-us/windows/wsl/install-manual
+
+### 6.8 Pycharm
 
 - 专业版要求, [Buy PyCharm Professional: Pricing and Licensing, Discounts - JetBrains Toolbox Subscription](https://www.jetbrains.com/pycharm/buy/)
 
@@ -2037,9 +2065,7 @@ npm get registry
 
 ![2023-01-10 11 54 47.png](https://img1.imgtp.com/2023/01/10/RhS9ML3u.png)
 
----
-
-## 八. 优化占用
+### 6.9 优化占用
 
 ![2023-01-09 21 42 59.png](https://img1.imgtp.com/2023/01/10/QKETJ75v.png)
 
@@ -2064,9 +2090,9 @@ sudo crontab -e -u root
 选择: nano
 
 # 在文件的底部添加下列内容
-# /45表示45分钟执行一次
+# /35表示45分钟执行一次
 # 相关设置见上面的介绍
-*/45 * * * * sync; echo 3 > /proc/sys/vm/drop_caches; touch /root/drop_caches_last_run
+*/35 * * * * sync; echo 3 > /proc/sys/vm/drop_caches; touch /root/drop_caches_last_run
 ```
 
 ```bash
@@ -2111,9 +2137,7 @@ alex@DESKTOP-F6VO5U4:/mnt/c/Users/Lian$ sudo stat -c '%y' /root/drop_caches_last
 
 - [参考链接-wsl导致vmmem占用高解决办法](https://zhuanlan.zhihu.com/p/166102340)
 
----
-
-## 九. 问题
+### 6.10 问题
 
 - 按照上述的`apt`方式安装`MySQL`
 
@@ -2140,7 +2164,7 @@ alex@DESKTOP-F6VO5U4:/mnt/c/Users/Lian$ sudo stat -c '%y' /root/drop_caches_last
   # mysql: unrecognized service
   ```
 
-- `MySQL`添加了自启动, 但是还是开机没有自启动.(可能是微软为了加速`wsl`启动`Ubuntu`的考虑, 将绝大部分的服务都禁止自启动?)
+- `MySQL`添加了自启动, 但是还是[开机没有自启动](https://superuser.com/questions/1343558/how-to-make-wsl-run-services-at-startup).
 
 - 大量的依赖包, 需要更低版本的支持, 就算是已经安装有.
 
