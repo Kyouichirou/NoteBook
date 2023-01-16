@@ -225,170 +225,7 @@ sudo service smbd restart
 > .bash_logoutt：当你退出shell时执行的命令.
 > .profile：当你登入shell时执行的命令。一般会在.profile文件中显式调用.bashrc，启动bash时首先会去读取/.profile文件，这样/.bashrc也就得到执行了，你的个性化设置也就生效了.
 
-### 1.8 压缩/解压
-
-常见的压缩格式:
-
-> .zip, .gz, .bz2, .tar, .tar.gz, .tar.bz2
-
-```bash
-# 对同一文件压缩
-# 最大压缩率
--rw-r--r-- 1 alex alex 334K Jan 12 10:34 123.jpg.gz
--rw-r--r-- 1 alex alex 340K Jan 12 10:36 123.tar
--rw-r--r-- 1 alex alex 340K Jan 12 10:42 123.tar.bz2
--rw-r--r-- 1 alex alex 334K Jan 12 10:40 123.zip
-```
-
-| 参数 | 含义                                                |
-| ---- | --------------------------------------------------- |
-| tar  | Linux压缩/解压缩工具                                |
-| -z   | 代表gzip，使用gzip工具进行压缩或解压                |
-| -x   | 代表extract，解压文件（压缩文件是-c）               |
-| -v   | 代表verbose，显示解压过程（文件列表）               |
-| -f   | 代表file，指定要解压的文件名（or 要压缩成的文件名） |
-
-```bash
-# 解压文件
-tar -xvf zip_pack
-
-# 将文件解压到指定的文件夹
-tar -xvf zip_pack -C /test_foler
-
-# 查看压缩包内容
-(base) alex@DESKTOP-F6VO5U4:~/test_folder$ tar tvf test.tar
-drwxr-xr-x alex/alex         0 2023-01-11 21:32 a/
--rw-r--r-- alex/alex         0 2023-01-11 21:32 a/2.txt
--rw-r--r-- alex/alex         0 2023-01-11 21:32 a/1.txt
-
-# 将文件夹压缩
-(base) alex@DESKTOP-F6VO5U4:~/test_folder$ tar -cvf test.tar a
-a/
-a/2.txt
-a/1.txt
-(base) alex@DESKTOP-F6VO5U4:~/test_folder$ ls
-a  a.txt  b  b.txt  test.tar
-
-# 默认支持递归压缩
-(base) alex@DESKTOP-F6VO5U4:~/test_folder$ tar -cvf 3.tar c
-c/
-c/c1.txt
-c/d/
-c/d/d1.txt
-
-# 不要压缩包的顶级目录在解压时, --strip-components 1
-(base) alex@DESKTOP-F6VO5U4:~/test_folder$ tar -xvf 3.tar -C test_no_top --strip-components 1
-c/c1.txt
-c/d/
-c/d/d1.txt
-
-(base) alex@DESKTOP-F6VO5U4:~/test_folder$ ls test_no_top/ -R
-test_no_top/:
-c1.txt  d
-
-test_no_top/d:
-d1.txt
-```
-
-```bash
-# 没有预装, 需要手动安装
-sudo apt-get install zip
-
-# 注意这个坑,当指定的是文件夹, 它并没有加压文件夹内的内容
-(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -sf 1.zip
-Archive contains:
-  a/
-Total 1 entries (0 bytes)
-
-# 多层级的目录, 也是如此, -r, 实际上就是递归获取文件进行加压
-(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -r 3.zip c
-  adding: c/ (stored 0%)
-  adding: c/c1.txt (stored 0%)
-  adding: c/d/ (stored 0%)
-  adding: c/d/d1.txt (stored 0%)
-
-# 需要使用参数 -r
-(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -r 1.zip a
-  adding: a/ (stored 0%)
-  adding: a/2.txt (stored 0%)
-  adding: a/1.txt (stored 0%)
-  adding: a/3.txt (stored 0%)
-(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -sf 1.zip
-Archive contains:
-  a/
-  a/2.txt
-  a/1.txt
-  a/3.txt
-Total 4 entries (0 bytes)
-
-# zip 解压缩
-(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip test.zip a
-  adding: a/ (stored 0%)
-(base) alex@DESKTOP-F6VO5U4:~/test_folder$ ls
-a  a.txt  b  b.txt  test.tar  test.zip
-
-# 添加文件到现有的压缩包
-(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -m test.zip ./b/b1.txt
-  adding: b/b1.txt (deflated 4%)
-(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -v test.zip
-
-# 压缩文件夹后删除源文件
-zip a.zip a | rm -rf a
-
-
-zip error: Nothing to do! (test.zip)
-# 查看压缩包, 但不解压
-(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -sf test.zip
-Archive contains:
-  a/
-  b/b1.txt
-Total 2 entries (27 bytes)
-
-# 查看压缩情况
-(base) alex@DESKTOP-F6VO5U4:~/test_folder$ unzip -v test.zip
-Archive:  test.zip
- Length   Method    Size  Cmpr    Date    Time   CRC-32   Name
---------  ------  ------- ---- ---------- ----- --------  ----
-       0  Stored        0   0% 2023-01-11 21:32 00000000  a/
-      27  Defl:N       26   4% 2023-01-12 09:49 669df147  b/b1.txt
---------          -------  ---                            -------
-      27               26   4%                            2 files
-```
-
-zip支持参数
-
-语法结构：`zip [-options] [-b path] [-t mmddyyyy] [-n suffixes] [zipfile list] [-xi list]`
-
-- -f 更新现有的文件
-- -u 与-f参数类似，但是除了更新现有的文件外，也会将压缩文件中的其他文件解压缩到目录中
-- -d 指定文件解压缩后所要存储的目录
-- -m 将文件压缩并加入压缩文件后，删除原始文件，即把文件移到压缩文件中
-- -r 将指定的目录下的所有子目录以及文件一起处理
-- -j 不处理压缩文件中原有的目录路径
-- -0 在存储，不压缩
-- -l 显示压缩文件内所包含的文件
-- -1 较快速度的压缩
-- -9 较高质量的压缩
-- -q 安静模式，在压缩的时候不显示指令的执行过程
-- -v 执行是时显示详细的信息
-- -c 将解压缩的结果显示到屏幕上，并对字符做适当的转换
-- -z 仅显示压缩文件的备注文字
-- -@ 从标准输入中读取名称，一个路径名称用一行
-- -o 将压缩文件内的所有文件的最新变动时间设为压缩时候的时间
-- -x 指定不要处理.zip压缩文件中的哪些文件
-- -i 只压缩符合条件的文件
-- -F 尝试修复损坏的压缩文件
-- -D 压缩文件内不建立目录名称
-- -A 调整可执行的自动解压缩文件
-- -J 删除可执行文件，留下一个普通的zip归档文件
-- -T 检查备份文件内的每个文件是否正确无误
-- -X 解压缩时同时回存文件原来的UID/GID
-- -y 直接保存符号连接，而非该连接所指向的文件，本参数仅在UNIX之类的系统下有效
-- -e 加密
-- -n 不压缩具有特定字尾字符串的文件
-- -h2 显示更多帮助
-
-### 1.9 权限
+### 1.8 权限
 
 > **Linux file ownership**
 >
@@ -1187,6 +1024,206 @@ dpkg -P package_name
 
 - [更多介绍](https://www.golinuxcloud.com/dpkg-command-in-linux/)
 
+### 5. net状态
+
+```bash
+## netstat已经被ss命令所取代
+ss -l 显示本地打开的所有端口
+ss -pl 显示每个进程具体打开的socket
+ss -t -a 显示所有tcp socket
+ss -u -a 显示所有的UDP Socekt
+ss -o state established '( dport = :smtp or sport = :smtp )' 显示所有已建立的SMTP连接
+ss -o state established '( dport = :http or sport = :http )' 显示所有已建立的HTTP连接
+ss -x src /tmp/.X11-unix/* 找出所有连接X服务器的进程
+ss -s 列出当前socket详细信息
+
+## ifconfig 被ip命令所取代
+(base) alex@DESKTOP-F6VO5U4:/mnt/c/Users/Lian$ ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+2: bond0: <BROADCAST,MULTICAST,MASTER> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether 52:a8:3f:0c:68:9c brd ff:ff:ff:ff:ff:ff
+3: dummy0: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether 1a:6d:08:94:f3:e6 brd ff:ff:ff:ff:ff:ff
+4: tunl0@NONE: <NOARP> mtu 1480 qdisc noop state DOWN group default qlen 1000
+    link/ipip 0.0.0.0 brd 0.0.0.0
+5: sit0@NONE: <NOARP> mtu 1480 qdisc noop state DOWN group default qlen 1000
+    link/sit 0.0.0.0 brd 0.0.0.0
+6: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether 00:15:5d:6a:fc:de brd ff:ff:ff:ff:ff:ff
+    inet 172.17.211.121/20 brd 172.17.223.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::215:5dff:fe6a:fcde/64 scope link
+       valid_lft forever preferred_lft forever
+```
+
+### 6 压缩/解压
+
+常见的压缩格式:
+
+> .zip, .gz, .bz2, .tar, .tar.gz, .tar.bz2
+
+```bash
+# 对同一文件压缩
+# 最大压缩率
+-rw-r--r-- 1 alex alex 334K Jan 12 10:34 123.jpg.gz
+-rw-r--r-- 1 alex alex 340K Jan 12 10:36 123.tar
+-rw-r--r-- 1 alex alex 340K Jan 12 10:42 123.tar.bz2
+-rw-r--r-- 1 alex alex 334K Jan 12 10:40 123.zip
+```
+
+| 参数 | 含义                                                |
+| ---- | --------------------------------------------------- |
+| tar  | Linux压缩/解压缩工具                                |
+| -z   | 代表gzip，使用gzip工具进行压缩或解压                |
+| -x   | 代表extract，解压文件（压缩文件是-c）               |
+| -v   | 代表verbose，显示解压过程（文件列表）               |
+| -f   | 代表file，指定要解压的文件名（or 要压缩成的文件名） |
+
+```bash
+# 解压文件
+tar -xvf zip_pack
+
+# 将文件解压到指定的文件夹
+tar -xvf zip_pack -C /test_foler
+
+# 查看压缩包内容
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ tar tvf test.tar
+drwxr-xr-x alex/alex         0 2023-01-11 21:32 a/
+-rw-r--r-- alex/alex         0 2023-01-11 21:32 a/2.txt
+-rw-r--r-- alex/alex         0 2023-01-11 21:32 a/1.txt
+
+# 将文件夹压缩
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ tar -cvf test.tar a
+a/
+a/2.txt
+a/1.txt
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ ls
+a  a.txt  b  b.txt  test.tar
+
+# 默认支持递归压缩
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ tar -cvf 3.tar c
+c/
+c/c1.txt
+c/d/
+c/d/d1.txt
+
+# 不要压缩包的顶级目录在解压时, --strip-components 1
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ tar -xvf 3.tar -C test_no_top --strip-components 1
+c/c1.txt
+c/d/
+c/d/d1.txt
+
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ ls test_no_top/ -R
+test_no_top/:
+c1.txt  d
+
+test_no_top/d:
+d1.txt
+```
+
+```bash
+# 没有预装, 需要手动安装
+sudo apt-get install zip
+
+# 注意这个坑,当指定的是文件夹, 它并没有加压文件夹内的内容
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -sf 1.zip
+Archive contains:
+  a/
+Total 1 entries (0 bytes)
+
+# 多层级的目录, 也是如此, -r, 实际上就是递归获取文件进行加压
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -r 3.zip c
+  adding: c/ (stored 0%)
+  adding: c/c1.txt (stored 0%)
+  adding: c/d/ (stored 0%)
+  adding: c/d/d1.txt (stored 0%)
+
+# 需要使用参数 -r
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -r 1.zip a
+  adding: a/ (stored 0%)
+  adding: a/2.txt (stored 0%)
+  adding: a/1.txt (stored 0%)
+  adding: a/3.txt (stored 0%)
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -sf 1.zip
+Archive contains:
+  a/
+  a/2.txt
+  a/1.txt
+  a/3.txt
+Total 4 entries (0 bytes)
+
+# zip 解压缩
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip test.zip a
+  adding: a/ (stored 0%)
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ ls
+a  a.txt  b  b.txt  test.tar  test.zip
+
+# 添加文件到现有的压缩包
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -m test.zip ./b/b1.txt
+  adding: b/b1.txt (deflated 4%)
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -v test.zip
+
+# 压缩文件夹后删除源文件
+zip a.zip a | rm -rf a
+
+
+zip error: Nothing to do! (test.zip)
+# 查看压缩包, 但不解压
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ zip -sf test.zip
+Archive contains:
+  a/
+  b/b1.txt
+Total 2 entries (27 bytes)
+
+# 查看压缩情况
+(base) alex@DESKTOP-F6VO5U4:~/test_folder$ unzip -v test.zip
+Archive:  test.zip
+ Length   Method    Size  Cmpr    Date    Time   CRC-32   Name
+--------  ------  ------- ---- ---------- ----- --------  ----
+       0  Stored        0   0% 2023-01-11 21:32 00000000  a/
+      27  Defl:N       26   4% 2023-01-12 09:49 669df147  b/b1.txt
+--------          -------  ---                            -------
+      27               26   4%                            2 files
+```
+
+zip支持参数
+
+语法结构：`zip [-options] [-b path] [-t mmddyyyy] [-n suffixes] [zipfile list] [-xi list]`
+
+- -f 更新现有的文件
+- -u 与-f参数类似，但是除了更新现有的文件外，也会将压缩文件中的其他文件解压缩到目录中
+- -d 指定文件解压缩后所要存储的目录
+- -m 将文件压缩并加入压缩文件后，删除原始文件，即把文件移到压缩文件中
+- -r 将指定的目录下的所有子目录以及文件一起处理
+- -j 不处理压缩文件中原有的目录路径
+- -0 在存储，不压缩
+- -l 显示压缩文件内所包含的文件
+- -1 较快速度的压缩
+- -9 较高质量的压缩
+- -q 安静模式，在压缩的时候不显示指令的执行过程
+- -v 执行是时显示详细的信息
+- -c 将解压缩的结果显示到屏幕上，并对字符做适当的转换
+- -z 仅显示压缩文件的备注文字
+- -@ 从标准输入中读取名称，一个路径名称用一行
+- -o 将压缩文件内的所有文件的最新变动时间设为压缩时候的时间
+- -x 指定不要处理.zip压缩文件中的哪些文件
+- -i 只压缩符合条件的文件
+- -F 尝试修复损坏的压缩文件
+- -D 压缩文件内不建立目录名称
+- -A 调整可执行的自动解压缩文件
+- -J 删除可执行文件，留下一个普通的zip归档文件
+- -T 检查备份文件内的每个文件是否正确无误
+- -X 解压缩时同时回存文件原来的UID/GID
+- -y 直接保存符号连接，而非该连接所指向的文件，本参数仅在UNIX之类的系统下有效
+- -e 加密
+- -n 不压缩具有特定字尾字符串的文件
+- -h2 显示更多帮助
+
 ---
 
 ## 三. Python
@@ -1831,6 +1868,7 @@ sudo service mysql start
 sudo mysql
 # 为root账号添加密码
  ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '123456';
+ # ALTER USER 'root'@'localhost' IDENTIFIED BY '<password>';
 # 再次登录
 mysql -uroot -p
 
