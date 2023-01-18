@@ -5,12 +5,14 @@
     @author: HLA
     @github: https://github.com/Kyouichirou
     @version: 1.0
-    @description: mysql基础与进阶
+    @description: mysql基础与进阶, 从查询, 到配置与管理.
     @license: MIT
     
     																							-- make thing better and simpler.
 '''
 ```
+
+[TOC]
 
 ## 一. 前言
 
@@ -51,6 +53,10 @@
 
 ## 二. 基本概要
 
+![8cfb1fc88d1b4fbf866121ae9aa9e5f9_tplv-k3u1fbpfcp-zoom-1.png](https://img1.imgtp.com/2023/01/17/T93PBcav.png)
+
+*注意优化器的解析处理, 这将改变一些理论上的行为. 例如优化器认为走全表扫描比对索引来的更快, 也许并不不会使用索引.*
+
 ### 2.1 数据类型
 
 #### 2.1.1 数值型
@@ -65,6 +71,24 @@
 | FLOAT        | 4 Bytes                                  | (-3.402 823 466 E+38，-1.175 494 351 E-38)，0，(1.175 494 351 E-38，3.402 823 466 351 E+38) | 0，(1.175 494 351 E-38，3.402 823 466 E+38)                  | 单精度 浮点数值 |
 | DOUBLE       | 8 Bytes                                  | (-1.797 693 134 862 315 7 E+308，-2.225 073 858 507 201 4 E-308)，0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308) | 0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308) | 双精度 浮点数值 |
 | DECIMAL      | 对DECIMAL(M,D) ，如果M>D，为M+2否则为D+2 | 依赖于M和D的值                                               | 依赖于M和D的值                                               | 小数值          |
+
+```bash
+# 指定数据的精度的设置, 在浮点数上也将被移除
+# unsigned, 无符号, 针对浮点数, 也将移除
+mysql> show warnings;
++---------+------+--------------------------------------------------------------------------------------------------------------------------+
+| Level   | Code | Message
+ |
++---------+------+--------------------------------------------------------------------------------------------------------------------------+
+| Warning | 1681 | Specifying number of digits for floating point data types is deprecated and will be removed in a future release.
+ |
+| Warning | 1681 | UNSIGNED for decimal and floating point data types is deprecated and support for it will be removed in a future release. |
+| Warning | 1681 | Specifying number of digits for floating point data types is deprecated and will be removed in a future release.
+ |
+| Warning | 1681 | UNSIGNED for decimal and floating point data types is deprecated and support for it will be removed in a future release. |
++---------+------+--------------------------------------------------------------------------------------------------------------------------+
+4 rows in set (0.00 sec)
+```
 
 注意事项, 浮点数的处理是计算中一个相对麻烦的问题, 对于精度要求特别高的, 可以应当使用`decimal`类型的数据.
 
@@ -413,7 +437,7 @@ mysql> show variables like 'sql_mode';
 | `NO_ZERO_DATE`               | 在严格模式，不要将 '0000-00-00'做为合法日期。你仍然可以用IGNORE选项插入零日期。在非严格模式，可以接受该日期，但会生成警告 | 日期相关     |
 | `ERROR_FOR_DIVISION_BY_ZERO` | 在严格模式，在INSERT或UPDATE过程中，如果被零除(或MOD(X，0))，则产生错误(否则为警告)。如果未给出该模式，被零除时MySQL返回NULL。如果用到INSERT IGNORE或UPDATE IGNORE中，MySQL生成被零除警告，但操作结果为NULL。 | 插入内容检查 |
 | `NO_AUTO_CREATE_USER`        | 防止GRANT自动创建新用户，除非还指定了密码。                  | 创建用户     |
-| `NO_ENGINE_SUBSTITUTION`     | 如果需要的存储引擎被禁用或未编译，那么抛出错误。不设置此值时，用默认的存储引擎替代，并抛出一个异常。 |              |
+| `NO_ENGINE_SUBSTITUTION`     | 如果需要的存储引擎被禁用或未编译，那么抛出错误。不设置此值时，用默认的存储引擎替代，并抛出一个异常. |              |
 | `pad_char_to_full_length`    | 控制`char`类型字段对于尾部空格的处理(As of MySQL 8.0.13, [`PAD_CHAR_TO_FULL_LENGTH`](https://dev.mysql.com/doc/refman/8.0/en/sql-mode.html#sqlmode_pad_char_to_full_length) is deprecated. Expect it to be removed in a future version of MySQL.) | 字段设置     |
 
 - [参考连接-sql_mode](https://dev.mysql.com/doc/refman/8.0/en/sql-mode.html)
@@ -1063,6 +1087,25 @@ Query OK, 0 rows affected (0.01 sec)
   +-------------------------------------------------------------------------------------------------+
   2 rows in set (0.00 sec)
   ```
+
+### 2.10 查询缓存
+
+从各种资料来看, 查询缓存已经名存实亡.
+
+> *Although MySQL Query Cache was meant to improve performance, it has serious scalability issues and it can easily become a severe bottleneck*
+
+```bash
+mysql> show variables like '%query_cache%';
++------------------+-------+
+| Variable_name    | Value |
++------------------+-------+
+| have_query_cache | NO    |
++------------------+-------+
+1 row in set (0.00 sec)
+```
+
+- [译文-MySQL开发团队的文章 MySQL 8.0：不再支持查询缓存](https://blog.csdn.net/LiushaoMr/article/details/107879835)
+- [MySQL 8.0: Retiring Support for the Query Cache](https://dev.mysql.com/blog-archive/mysql-8-0-retiring-support-for-the-query-cache/)
 
 ## 三. 基本命令
 
@@ -4559,6 +4602,12 @@ mysql> select style_id, count(style_id) SPU_num from product_tb group by style_i
 
 ### 14.7 窗口函数
 
+*在窗口函数中, 注意对于聚合函数, 诸如`sum`, `count`等的使用, 很容易触发以下错误.*
+
+> SQL_ERROR_INFO: "In aggregated query without GROUP BY, expression #1 of SELECT list contains nonaggregated column 'base_table.user_id'; this is incompatible with sql_mode=only_full_group_by"
+>
+> *注意各类函数之间大搭配使用, 如having, 就应该和group by进行一起使用. 在经过聚合处理的临时表, 引用聚合函数, sum等时, 注意聚合的字段和聚合的数据所在的字段.*
+
 ![2019022312202720.png](https://img1.imgtp.com/2023/01/14/WD6pYQaK.png)
 
 窗口函数即`OLAP`, `Online Anallytical Processing`，联机分析处理.
@@ -4581,11 +4630,9 @@ mysql> select style_id, count(style_id) SPU_num from product_tb group by style_i
 | [`RANK()`](https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_rank) | Rank of current row within its partition, with gaps, 排名    |
 | [`ROW_NUMBER()`](https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_row-number) | Number of current row within its partition, 行号             |
 
-![2023-1-16 22-31-34.png](https://img1.imgtp.com/2023/01/17/evFaG5lP.png)
-
 一般语法结构
 
-```bash
+```mysql
 window_function_name (expression) 
  OVER (
      [partition_defintion]
@@ -4633,6 +4680,8 @@ mysql> select * from sales;
 | John           |        2018 | 250.00 |
 +----------------+-------------+--------+
 ```
+
+#### 14.7.1 分组函数
 
 ```bash
 # 常见的汇总
@@ -4687,6 +4736,8 @@ mysql> SELECT *, concat ( left (temp.sale / temp.total_sales * 100, 5),'%') as r
 
   该函数用于解决, 数据处理后, 源数据丢失的问题.
 
+#### 14.7.2 排名函数
+
 ```bash
 # 筛选出每个年度最高的sales_employee, topN
 mysql> SELECT * from
@@ -4714,7 +4765,6 @@ mysql> SELECT * from
 | John           |        2018 | 250.00 | 1 |
 +----------------+-------------+--------+---+
 3 rows in set (0.00 sec)
-
 
 mysql> select *, RANK() over (partition by fiscal_year order by sale desc) as r from sales;
 +----------------+-------------+--------+---+
@@ -4777,6 +4827,8 @@ mysql> select *, row_number() over (partition by fiscal_year order by sale desc)
   df.sort_values(by=['营业总收入'], ascending=False).groupby(by=['year']).head(3)
   ```
 
+#### 14.7.3 分桶函数
+
 ```bash
 mysql> SELECT *, NTILE(2) over (partition by CountryCode order by Population) as nt from city limit 10;
 +-----+----------------+-------------+----------+------------+----+
@@ -4796,8 +4848,59 @@ mysql> SELECT *, NTILE(2) over (partition by CountryCode order by Population) as
 10 rows in set (0.01 sec)
 ```
 
+```mysql
+# 计算占比
+# 2020年支付金额排名前30%(并不是精确, 而是将之视作整体)的用户, 以及该用户支付的金额占当年的总额的百分比
+# 局部, 和全局同时计算的问题
+# 1. 找出2020年的用户
+# 2. 按照用户名计算出各个用户之间的金额
+# 3. 找出前30%
+# 4. 计算单个用户支出占整体的金额
+WITH a AS ( SELECT * FROM test_c WHERE YEAR ( pay_time ) = 2020 ),
+b AS ( SELECT user_name, sum( pay_amount ) AS user_total FROM a GROUP BY user_name ),
+c AS (
+	SELECT
+		user_name,
+		sum( user_total ) over ( PARTITION BY NULL ) AS total,
+		NTILE( 10 ) over ( ORDER BY user_total DESC ) AS part 
+	FROM
+		b 
+	) SELECT
+	b.user_name,
+	round( b.user_total, 2 ) AS user_pay_total,
+	concat( round( user_total / total * 100, 2 ), '%' ) AS percent 
+FROM
+	b
+	left JOIN c ON b.user_name = c.user_name 
+WHERE
+	c.part < 4;
+```
+
+```mysql
+# 优化版本
+WITH a AS ( SELECT user_name, sum( pay_amount ) AS total FROM test_c WHERE YEAR ( pay_time ) = 2020 GROUP BY user_name ),
+b AS (
+	SELECT
+		user_name,
+		total,
+		sum( total ) over ( PARTITION BY NULL ) AS all_total,
+		ntile( 10 ) over ( ORDER BY total DESC ) AS s_part 
+	FROM
+		a 
+	) SELECT
+	user_name,
+	round( total, 2 ) AS user_pay_total,
+	concat( round( total / all_total * 100, 2 ), '%' ) AS user_percent 
+FROM
+	b 
+WHERE
+	s_part < 4;
+```
+
 - `ntile`, 分桶/分箱.
 - `pandas`中对应的函数, `cut/qcut`.
+
+#### 14.7.4 滑动函数
 
 ```bash
 # 连续问题, 例如网站的登录, 哪些用户连续 N天 登录
@@ -4973,40 +5076,64 @@ ERROR 1055 (42000): Expression #1 of SELECT list is not in GROUP BY clause and c
   # 解决使用多个临时表过于混乱的问题
   ```
 
-- `date_sub`函数
-
-  从日期减去指定的时间间隔.
+- `date_sub`函数, 从日期减去指定的时间间隔.
 
   ### 语法
 
   >  DATE_SUB(date,INTERVAL expr type)
+>
+  >  `date` 参数是合法的日期表达式,`expr` 参数是您希望添加的时间间隔.
+>
+  >  间隔时间支持见下面时间处理
 
-  `date` 参数是合法的日期表达式,`expr` 参数是您希望添加的时间间隔.
 
-  `type` 参数可以是下列值：
+![2023-1-16 22-31-34.png](https://img1.imgtp.com/2023/01/17/evFaG5lP.png)
 
-  | Type 值            |
-  | :----------------- |
-  | MICROSECOND, 毫秒  |
-  | SECOND, 秒         |
-  | MINUTE, 分         |
-  | HOUR, 小时         |
-  | DAY, 天            |
-  | WEEK, 周           |
-  | MONTH, 月          |
-  | QUARTER, 季度      |
-  | YEAR, 年           |
-  | SECOND_MICROSECOND |
-  | MINUTE_MICROSECOND |
-  | MINUTE_SECOND      |
-  | HOUR_MICROSECOND   |
-  | HOUR_SECOND        |
-  | HOUR_MINUTE        |
-  | DAY_MICROSECOND    |
-  | DAY_SECOND         |
-  | DAY_MINUTE         |
-  | DAY_HOUR           |
-  | YEAR_MONTH         |
+> [<ROWS or RANGE clause> BETWEEN <Start expr> AND <End expr>]
+
+- `rows`: 表示按照行的范围进行定义框架，根据`order by`子句排序后，取的前N行及后N行的数据计算（与当前行的值无关，只与排序后的行号相关）。常用：`rows n perceding`表示从当前行到前n行（一共`n+1`行）
+- `range`：表示按照值的范围进行定义框架，根据`order by`子句排序后，指定当前行对应值的范围取值，行数不固定，只要行值在范围内，对应行都包含在内。适用于对日期、时间、数值排序分组
+
+| 边界可取值（Start expr & End expr） | 说明                                           |
+| ----------------------------------- | ---------------------------------------------- |
+| Current Row                         | 当前行                                         |
+| N preceding                         | 前 n 行，n 为数字， 比如 2 Preceding 表示前2行 |
+| unbounded preceding                 | 开头                                           |
+| N following                         | 后N行，n 为数字， 比如 2 following 表示后2行   |
+| unbounded following                 | 结尾                                           |
+
+| range取特定日期区间                                          | 说明               |
+| ------------------------------------------------------------ | ------------------ |
+| range interval 7-1 day preceding                             | 最近7天的值        |
+| range between interval 1 day preceding and interval 1 day following | 前后一天和当天的值 |
+
+> rows between 1 preceding and 1 following 窗口范围是分区中的当前行、前一行、后一行一共三
+> 行记录.
+>
+> rows between 1 preceding and current row 窗口范围是分区中的前一行、当前行一共两行记录.
+>
+> rows between current row and 1 following 窗口范围是分区中的当前行、后一行一共两行记录.
+>
+> rows unbounded preceding 窗口范围是分区中的第一行到当前行.
+>
+> rows between unbounded preceding and current row 窗口范围是分区中的第一行到当前行.
+>
+> rows between current row and unbounded following 窗口范围是分区中的当前行到最后一行.
+>
+> rows between unbounded preceding and unbounded following 窗口范围是当前分区中所有行.
+
+
+
+#### 14.7.5 累积分布
+
+```mysql
+CUME_DIST() OVER (
+ PARTITION BY expr, ...
+ ORDER BY expr [ASC | DESC], ...
+) 
+```
+
+- `CUME_DIST()`
 
 ```bash
 # 累积分布
@@ -5034,9 +5161,9 @@ mysql> SELECT
 10 rows in set (0.00 sec)
 ```
 
-滑动函数
+#### 跨行访问
 
-rows between 、range between
+
 
 ## 十五. 备份和还原
 
@@ -5148,20 +5275,37 @@ SELECT EXTRACT(SECOND FROM '2021-04-02 10:37:14.123456');  # 14
 ### 16.2 日期增加、减少
 
 ```sql
+# 注意 INTERVAL
 # 时间减少1小时（前一小时）
 select date_sub(now(), INTERVAL 1 hour);
-
 # 日期增加1天
 select date_add(now(), INTERVAL 1 day);
-
-# 其他间隔
-INTERVAL 1 YEAR
-INTERVAL 1 MONTH
-INTERVAL 1 DAY
-INTERVAL 1 HOUR
-INTERVAL 1 MINUTE
-INTERVAL 1 SECOND
 ```
+
+支持时间间隔参数:
+
+| Type 值            |
+| :----------------- |
+| MICROSECOND, 毫秒  |
+| SECOND, 秒         |
+| MINUTE, 分         |
+| HOUR, 小时         |
+| DAY, 天            |
+| WEEK, 周           |
+| MONTH, 月          |
+| QUARTER, 季度      |
+| YEAR, 年           |
+| SECOND_MICROSECOND |
+| MINUTE_MICROSECOND |
+| MINUTE_SECOND      |
+| HOUR_MICROSECOND   |
+| HOUR_SECOND        |
+| HOUR_MINUTE        |
+| DAY_MICROSECOND    |
+| DAY_SECOND         |
+| DAY_MINUTE         |
+| DAY_HOUR           |
+| YEAR_MONTH         |
 
 ------
 
@@ -5170,8 +5314,8 @@ INTERVAL 1 SECOND
 ```sql
 # 格式化参考：
 select DATE_FORMAT(now(),'%Y-%m-%d %H:%i:%s');
+# 只需要保留小时部分
 select DATE_FORMAT(now(),'%Y-%m-%d %H:00:00');
-
 #字符串转日期
 select str_to_date('2021-04-02 10:37:14', '%Y-%m-%d %H:%i:%s'); # 2021-04-02 10:37:14
 ```
@@ -5241,7 +5385,7 @@ SELECT DAYOFWEEK('2017-05-15 10:37:14.123456');-- 2 (日期在周中第几天；
 SELECT WEEKDAY('2017-05-15 10:37:14.123456');-- 0
 SELECT WEEKDAY('2017-05-21 10:37:14.123456');-- 6(与dayofweek()都表示日期在周的第几天，只是参考标准不同，weekday()周一为第0天，周日为第6天)
 SELECT YEARWEEK('2017-05-15 10:37:14.123456');-- 201720(年和周)
- 
+# 201720
 SELECT EXTRACT(YEAR FROM '2017-05-15 10:37:14.123456');
 SELECT EXTRACT(MONTH FROM '2017-05-15 10:37:14.123456');
 SELECT EXTRACT(DAY FROM '2017-05-15 10:37:14.123456');
@@ -5266,7 +5410,6 @@ SELECT EXTRACT(SECOND_MICROSECOND FROM '2017-05-15 10:37:14.123456');-- 14123456
 -- 并且还具有选取‘day_microsecond' 等功能。
 -- 注意这里不是只选取 day 和 microsecond，而是从日期的 day 部分一直选取到 microsecond 部分。
  
- 
 SELECT DAYNAME('2017-05-15 10:37:14.123456');-- Monday(返回英文星期)
 SELECT MONTHNAME('2017-05-15 10:37:14.123456');-- May(返回英文月份)
 SELECT LAST_DAY('2016-02-01');-- 2016-02-29 (返回月份中最后一天)
@@ -5284,7 +5427,7 @@ SELECT DATE_ADD('2017-05-15 10:37:14.123456',INTERVAL 1 MINUTE);-- 表示：2017
 SELECT DATE_ADD('2017-05-15 10:37:14.123456',INTERVAL 1 SECOND);-- 表示：2017-05-15 10:37:15.123456
 SELECT DATE_ADD('2017-05-15 10:37:14.123456',INTERVAL 1 MICROSECOND);-- 表示：2017-05-15 10:37:14.123457
  
- 
+
 -- DATE_SUB(date,INTERVAL expr type) 从日期减去指定的时间间隔
 SELECT DATE_SUB('2017-05-15 10:37:14.123456',INTERVAL 1 YEAR);-- 表示：2016-05-15 10:37:14.123456
 SELECT DATE_SUB('2017-05-15 10:37:14.123456',INTERVAL 1 QUARTER);-- 表示：2017-02-15 10:37:14.123456
@@ -5316,20 +5459,18 @@ SELECT PERIOD_DIFF(201706, 201703);--
 SELECT DATEDIFF('2017-06-05','2017-05-29');-- 7
 -- TIMEDIFF(time1,time2)：两个日期相减 time1 - time2，返回 TIME 差值
 SELECT TIMEDIFF('2017-06-05 19:28:37', '2017-06-05 17:00:00');-- 02:28:37
- 
- 
+
 -- MySQL日期转换函数
 SELECT TIME_TO_SEC('01:00:05'); -- 3605
 SELECT SEC_TO_TIME(3605);-- 01:00:05
- 
+
 -- MySQL （日期、天数）转换函数：to_days(date), from_days(days)
 SELECT TO_DAYS('0000-00-00'); -- NULL 
 SELECT TO_DAYS('2017-06-05'); -- 736850
 SELECT FROM_DAYS(0);           -- '0000-00-00' 
 SELECT FROM_DAYS(736850);      -- '2017-06-05'
- 
+
 -- MySQL Str to Date （字符串转换为日期）函数：str_to_date(str, format)
- 
 SELECT STR_TO_DATE('06.05.2017 19:40:30', '%m.%d.%Y %H:%i:%s');-- 2017-06-05 19:40:30
 SELECT STR_TO_DATE('06/05/2017', '%m/%d/%Y');                  -- 2017-06-05
 SELECT STR_TO_DATE('2017/12/3','%Y/%m/%d')		       -- 2017-12-03
@@ -5339,7 +5480,6 @@ SELECT STR_TO_DATE('20:09:30', '%h:%i:%s')		       -- NULL(超过12时的小时�
 SELECT DATE_FORMAT('2017-05-12 17:03:51', '%Y年%m月%d日 %H时%i分%s秒');-- 2017年05月12日 17时03分51秒(具体需要什么格式的数据根据实际情况来;小写h为12小时制;)
 SELECT TIME_FORMAT('2017-05-12 17:03:51', '%Y年%m月%d日 %H时%i分%s秒');-- 0000年00月00日 17时03分51秒(time_format()只能用于时间的格式化)
 -- STR_TO_DATE()和DATE_FORMATE()为互逆操作
- 
 -- MySQL 获得国家地区时间格式函数：get_format()
 -- MySQL get_format() 语法：get_format(date|time|datetime, 'eur'|'usa'|'jis'|'iso'|'internal'
 -- MySQL get_format() 用法的全部示例：
@@ -5359,15 +5499,12 @@ SELECT GET_FORMAT(TIME,'iso');   	-- '%H:%i:%s'
 SELECT GET_FORMAT(TIME,'eur');   	-- '%H.%i.%s' 
 SELECT GET_FORMAT(TIME,'internal');     -- '%H%i%s'
  
- 
 -- MySQL 拼凑日期、时间函数：makdedate(year,dayofyear), maketime(hour,minute,second)
 SELECT MAKEDATE(2017,31);   -- '2017-01-31' 
 SELECT MAKEDATE(2017,32);   -- '2017-02-01'
 SELECT MAKETIME(19,52,35);  -- '19:52:35'
- 
 -- MySQL 时区（timezone）转换函数：convert_tz(dt,from_tz,to_tz)
 SELECT CONVERT_TZ('2017-06-05 19:54:12', '+08:00', '+00:00'); -- 2017-06-05 11:54:12
- 
  
 -- MySQL （Unix 时间戳、日期）转换函数
 -- unix_timestamp(), unix_timestamp(date), from_unixtime(unix_timestamp), from_unixtime(unix_timestamp,format)
@@ -5399,6 +5536,7 @@ SELECT TIMESTAMPDIFF(SECOND, '2017-06-01 08:12:25', '2016-06-15 00:00:00');-- -3
 ### 17.1 Python
 
 ```bash
+# 假如没有安装
 # 安装python/connector
 pip install mysql-connector-python
 ```
@@ -5534,6 +5672,135 @@ End Sub
 
 1. 确保Windows防火墙(假如处于开启状态)的进站规则当中包含MySQL的端口处于开放的状态(默认端口`3306`/`33060`), 使用前可以先ping对应的主机是否可用.
 2. [配置数据库的权限](https://www.cnblogs.com/chig/p/11907047.html), 允许局域网访问.
+
+### 17.4 外部文本文件数据导入
+
+![delimiter](https://img1.imgtp.com/2023/01/18/uu9XpRAY.png)
+
+需要保存作为分隔符同样的符号的字符.
+
+```mysql
+# csv / txt / 或者其他制表符的变种文件
+# 需要注意的细节
+# 字符编码
+# 错误处理
+# 重复数据处理
+# 字符的转义
+# 字符的连带符号
+LOAD DATA
+    [LOW_PRIORITY | CONCURRENT] [LOCAL] | 锁的影响, low, 在其他线程执行完, 在执行, con, 同时执行; 
+    INFILE 'file_name' | 文件
+    [REPLACE | IGNORE] | 处理冲突数据;
+    INTO TABLE tbl_name | 插入的数据表
+    [PARTITION (partition_name [, partition_name] ...)] | 分区相关(假如表采用了分区)
+    [CHARACTER SET charset_name] | 编码类型
+    [{FIELDS | COLUMNS} | 字段相关, 任意指定一个参数即可, 等价的
+        [TERMINATED BY 'string'] | 分隔符
+        [[OPTIONALLY] ENCLOSED BY 'char'] | 字段值由什么符号包围, 例如 需要表示 "abc", 包含符号在内
+        [ESCAPED BY 'char'] | 转义字符
+    ]
+    [LINES | 行相关
+        [STARTING BY 'string'] | 
+        [TERMINATED BY 'string'] | 分割符号, 即每一行是使用什么换行符
+    ]
+    [IGNORE number {LINES | ROWS}] | 跳过前几行, 从1开始(一般为表头, 就跳过1)
+    [(col_name_or_user_var | 字段名称
+        [, col_name_or_user_var] ...)]
+    [SET col_name={expr | DEFAULT} | 设置字段名称
+        [, col_name={expr | DEFAULT}] ...]
+```
+
+```bash
+create table test_c (
+	user_name varchar(16) not null,	
+	piece smallint unsigned, 
+	price float,	
+	pay_amount float,	
+	goods_category varchar(16),
+	pay_time timestamp
+);
+
+mysql> load data infile 'C:/Users/Lian/Desktop/user_trade.csv'
+    -> into table test_c
+    -> fields terminated by ','
+    -> lines terminated by '\n'
+    -> ignore 1 lines
+    -> (`user_name`,`piece`,`price`, `pay_amount`, `goods_category`, `pay_time`);
+ERROR 1290 (HY000): The MySQL server is running with the --secure-file-priv option so it cannot execute this statement
+```
+
+```bash
+# 这个参数能临时允许数据导入? 没测试
+mysql> show global variables like 'local_infile';
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| local_infile  | OFF   |
++---------------+-------+
+1 row in set (0.00 sec)
+
+mysql> show variables like '%secure%';
++--------------------------+-----------------------+
+| Variable_name            | Value                 |
++--------------------------+-----------------------+
+| require_secure_transport | OFF                   |
+| secure_file_priv         | /var/lib/mysql-files/ |
++--------------------------+-----------------------+
+2 rows in set (0.00 sec)
+```
+
+```bash
+## secure_file_priv  是个只读变量, 修改必须在配置文件
+# 指定可以从特定的路径,导入数据
+# linux, cnf
+# windows, ini
+# 这里是在linux
+
+# 先暂停服务
+sudo service mysql stop
+
+# 进入配置文件
+sudo vim /etc/mysql/mysql.conf.d/mysqld.cnf
+
+# 由于文件是存放在主机上的, linux在wsl上
+# 在配置文件上, 添加一个路径
+# secure_file_priv=/mnt/c/Users/Lian/Desktop/
+# 假如设置为secure_file_priv = '', 理论上这是表示任意路径下的文件的导入
+# 访问时会加上 /var/lib/mysql-files/ + 传入的路径
+
+# 重启服务
+sudo service mysql start
+
+# 添加数据即可, 注意文件的编码类型, 这里表默认utf-8, 文件也需要时utf-8
+load data infile '/mnt/c/Users/Lian/Desktop/user_trade.csv'
+into table test_c
+fields terminated by ','
+lines terminated by '\n'
+ignore 1 lines
+(`user_name`, `piece`, `price`, `pay_amount`, `goods_category`, `pay_time`);
+# 注意时间
+# 2020-01-01
+# excel会将时间转为如下, 在转为csv文件时
+# 1/1/2020
+# 手动复制时间重新覆盖csv文件上的数据即可.
+# 导入速度非常快
+mysql> select * from test_c limit 10;
++-----------+-------+-------+------------+----------------+---------------------+
+| user_name | piece | price | pay_amount | goods_category | pay_time            |
++-----------+-------+-------+------------+----------------+---------------------+
+| Allison   |     4 | 688.8 |     2755.2 | shoes          | 2018-01-07 00:00:00 |
+| Francis   |    83 |   1.1 |       91.3 | food           | 2018-01-07 00:00:00 |
+| DEMI      |    26 |  2222 |      57772 | electronics    | 2018-01-12 00:00:00 |
+| DEMI      |    39 |   200 |       7800 | clothes        | 2018-01-12 00:00:00 |
+| Enid      |    15 |  6666 |      99990 | computer       | 2018-01-12 00:00:00 |
+| Heidi     |    93 | 688.8 |    64058.4 | shoes          | 2018-01-12 00:00:00 |
+| Jackson   |    43 |   200 |       8600 | clothes        | 2018-01-12 00:00:00 |
+| Carroll   |     1 | 688.8 |      688.8 | shoes          | 2018-01-22 00:00:00 |
+| Carlos    |    52 |   8.9 |      462.8 | book           | 2018-02-05 00:00:00 |
+| Aviva     |    74 |  2222 |     164428 | electronics    | 2018-02-05 00:00:00 |
++-----------+-------+-------+------------+----------------+---------------------+
+10 rows in set (0.00 sec)
+```
 
 ## 十八. 使用与实践
 
