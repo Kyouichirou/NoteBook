@@ -912,6 +912,21 @@ su -，su -l或su --login 命令改变身份时，也同时变更工作目录，
 注意：su -使用root的密码,而sudo su使用用户密码
 ```
 
+```bash
+# 因为权限的差异, 得到的信息的差异
+(base) skywalker@skywalker-virtual-machine:~/桌面$ netstat -anp | grep mysql
+（并非所有进程都能被检测到，所有非本用户的进程信息将不会显示，如果想看到所有信息，则必须切换到 root 用户）
+unix  2      [ ACC ]     流        LISTENING     39438    -                    /var/run/mysqld/mysqlx.sock
+unix  2      [ ACC ]     流        LISTENING     38654    -                    /var/run/mysqld/mysqld.sock
+(base) skywalker@skywalker-virtual-machine:~/桌面$ sudo netstat -anp | grep mysql
+[sudo] skywalker 的密码： 
+tcp6       0      0 :::3306                 :::*                    LISTEN      1101/mysqld         
+tcp6       0      0 :::33060                :::*                    LISTEN      1101/mysqld         
+unix  2      [ ACC ]     流        LISTENING     39438    1101/mysqld          /var/run/mysqld/mysqlx.sock
+unix  2      [ ACC ]     流        LISTENING     38654    1101/mysqld          /var/run/mysqld/mysqld.sock
+unix  2      [ ]         数据报  已连接     36399    1101/mysqld  
+```
+
 ### 3. apt
 
 apt, advanced package tool, 高级包工具, 属于`debian`系`linux`发行版的关键组成部分之一.
@@ -2171,3 +2186,39 @@ alex@DESKTOP-F6VO5U4:/mnt/c/Users/Lian$ sudo stat -c '%y' /root/drop_caches_last
 - 一些服务找不到?
 
 - `Ubuntu`的`Windows`启动的`shell`界面, 会出现光标乱动的情况(特别是输出大量内容后, 光标的位置很容易出现乱跳).
+
+### 6.11 C语言环境
+
+会遇到一系列的依赖问题
+
+```bash
+alex@DESKTOP-F6VO5U4:~$ sudo apt install build-essential
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Some packages could not be installed. This may mean that you have
+requested an impossible situation or if you are using the unstable
+distribution that some required packages have not yet been created
+or been moved out of Incoming.
+The following information may help to resolve the situation:
+
+The following packages have unmet dependencies:
+ dpkg-dev : Depends: bzip2 but it is not installable
+ libc6-dev : Depends: libc6 (= 2.31-0ubuntu9.9) but 2.35-0ubuntu3.1 is to be installed
+             Depends: libc-dev-bin (= 2.31-0ubuntu9.9) but it is not going to be installed
+             Depends: libcrypt-dev but it is not going to be installed
+E: Unable to correct problems, you have held broken packages.
+alex@DESKTOP-F6VO5U4:~$ sudo apt install bzip2
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Some packages could not be installed. This may mean that you have
+requested an impossible situation or if you are using the unstable
+distribution that some required packages have not yet been created
+or been moved out of Incoming.
+The following information may help to resolve the situation:
+
+The following packages have unmet dependencies:
+ bzip2 : Depends: libbz2-1.0 (= 1.0.8-2) but 1.0.8-5build1 is to be installed
+E: Unable to correct problems, you have held broken packages.
+```
