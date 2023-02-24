@@ -1,8 +1,7 @@
 # NoteBook
 
-> *暂缓将内容放置于此.*
+> **重构**仓库中..., 将绝大部分的内容迁到[个人博客](https://kyouichirou.github.io/), pandas和jupyter notebook将保留在当前仓库.
 
-> *迁移部分内容到个人[博客](https://kyouichirou.github.io/).*
 
 各种笔记, 记录, 文档分享
 
