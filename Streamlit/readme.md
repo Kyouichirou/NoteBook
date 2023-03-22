@@ -1,3 +1,6 @@
+# 相关内容转移至个人博客, 本部分内容待废弃
+
+
 # [streamlit](https://streamlit.io/)
 
 [document](https://docs.streamlit.io/library/get-started)
