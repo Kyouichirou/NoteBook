@@ -1,0 +1,2 @@
+
+everything about O.R
